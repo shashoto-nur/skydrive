@@ -1,7 +1,23 @@
 import express from 'express';
+import http from 'http';
+import * as WebSocket from 'ws';
+import { AddressInfo } from 'net';
 
 const app = express();
-const PORT = 5000;
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-app.get('/', (_, res) => res.send('Server is online'));
-app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
+wss.on('connection', (ws: WebSocket) => {
+
+    ws.on('message', (message: string) => {
+        console.log(`Message: ${ message }`);
+        ws.send(`Message: ${ message }`);
+    });
+
+    ws.send('Websocket server online...');
+});
+
+server.listen(process.env.PORT || 5000, () => {
+    const { port } = server!.address() as AddressInfo;
+    console.log(`Server listening on port ${ port }`);
+});

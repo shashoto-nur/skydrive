@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "0.0.1",
-  "description": "Express server",
+  "description": "Express server for handling auth, database management and as storage client for the application",
   "main": "src/server.ts",
   "scripts": {
     "test": "echo \"No tests yet\"",

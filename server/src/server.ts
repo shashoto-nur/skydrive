@@ -1,53 +1,31 @@
 require('dotenv').config();
-import express from 'express';
+
 import http from 'http';
-import * as WebSocket from 'ws';
 import { AddressInfo } from 'net';
-import { createTransport } from "nodemailer";
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+import initApp from './config/app';
+import initiateWSS from './config/wss';
+import connectToDatabase from './config/db';
+import mail from './config/mail';
 
-const transporter = createTransport({
-    service: process.env.MAIL_SERVICE,
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS
-    }
-});
+const { initiateTransport } = mail;
+const transporter = initiateTransport();
 
-async function sendMail(mail: string, otp: number) {
-    const mailOptions = {
-        from: process.env.MAIL_USER,
-        to: mail,
-        subject: 'OTP from SkyDrive',
-        text: `Your OTP is ${ otp }`
-    };
+(async () => {
+    console.clear();
+    console.log('\x1b[36m%s\x1b[0m', 'Starting server...')
+    await connectToDatabase();
 
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) console.log(error);
-        else console.log('Email sent: ' + info.response);
-    });
-}
+    const app = initApp();
+    const server = http.createServer(app);
+    initiateWSS(server);
 
-wss.on('connection', (ws: WebSocket) => {
-
-    ws.on('message', (mail: string) => {
-        console.log(`Provided mail address: ${ mail }`);
-
-        const otp = Math.round(Math.random() * 0xFFFFFF);
-        sendMail(mail, otp).catch(console.error);
-
-        ws.send(`OTP sent. Check your email: ${ mail }`);
+    server.listen(process.env.PORT || 5000, () => {
+        const { port } = server!.address() as AddressInfo;
+        console.log(`Server listening on port ${port}`);
     });
 
-    ws.send('Websocket server online...');
-});
+})();
 
-server.listen(process.env.PORT || 5000, () => {
-    const { port } = server!.address() as AddressInfo;
-    console.log(`Server listening on port ${ port }`);
-});
+const served = { transporter };
+export default served;

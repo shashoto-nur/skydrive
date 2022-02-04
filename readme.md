@@ -4,6 +4,7 @@
 
     Secure an websocket connection
     Initiate a mail server
+    Connect to a database
     Setup a cron job for removing unverified mails (24 hrs)
     Establish a storage client
 

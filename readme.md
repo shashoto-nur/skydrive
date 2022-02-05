@@ -7,6 +7,7 @@
     Connect to a database
     Setup a cron job for removing unverified mails (24 hrs)
     Establish a storage client
+    Add global state manager to client
 
 ## User profile
 

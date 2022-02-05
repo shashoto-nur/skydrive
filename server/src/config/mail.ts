@@ -2,23 +2,33 @@ import { createTransport, Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 function initiateTransport() {
-    return createTransport({
+    const transporter = createTransport({
         service: process.env.MAIL_SERVICE,
-        port: 465,
-        secure: true,
+        port: +process.env.MAIL_PORT!,
+        secure: process.env.MAIL_PORT_SECURE === 'true',
         auth: {
             user: process.env.MAIL_USER,
             pass: process.env.MAIL_PASS
         }
     });
-}
 
-async function sendMail(receiver: string, text: string, transporter: Transporter<SMTPTransport.SentMessageInfo>) {
+    console.log(' Ready to send mail...');
+    return transporter;
+};
+
+interface MailDataType {
+    receiver: string;
+    text: string;
+    subject: string;
+};
+
+async function sendMail(mailData: MailDataType, transporter: Transporter<SMTPTransport.SentMessageInfo>) {
+    const { receiver, text, subject } = mailData;
     const mailOptions = {
         from: process.env.MAIL_USER,
         to: receiver,
-        subject: 'OTP from SkyDrive',
-        text: text
+        subject,
+        text
     };
 
     transporter.sendMail(mailOptions, function(error, info){
@@ -27,4 +37,4 @@ async function sendMail(receiver: string, text: string, transporter: Transporter
     });
 };
 
-export default { initiateTransport, sendMail };
+export { initiateTransport, sendMail, MailDataType };

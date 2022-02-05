@@ -6,7 +6,7 @@ const initApp = () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    console.log(' Express app initialised!');
+    console.log(' Express handling the http server...');
     return app;
 };
 

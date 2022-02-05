@@ -7,7 +7,7 @@ const connectToDatabase = async () => {
             console.log('\x1b[31m%s\x1b[0m', 'MONGO_URI not set!');
         else {
             const conn = await connect(process.env.MONGO_URI);
-            console.log(` MongoDB Connected: ${ conn.connection.host }`);
+            console.log(` MongoDB Connected: ${ conn.connection.host }...`);
         };
     } catch ({ message }) {
         console.log(`Error: ${ message }`);

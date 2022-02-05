@@ -17,6 +17,8 @@ function initiateWSS(server: any) {
 
         ws.send('Websocket server online...');
     });
+
+    console.log(' Websocket server online...');
 };
 
 export default initiateWSS;

@@ -13,9 +13,8 @@
 
     SignUp [create User object]
     Store email & generated hashed otp into database
-    Email verification (create password, rm otp)
+    Initiate login (email, update password)
     Add Workspace (create ws, encrypt id & modify user)
-    Initiate login (email, password)
     Setup Pin lock (local & global)
     Set cookies (auth, encryption)
     Logout (rm cookies & pin)

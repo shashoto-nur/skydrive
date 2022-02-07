@@ -10,8 +10,8 @@ function initiateWSS(server: any) {
 
     wss.on('connection', (ws: WebSocket) => {
 
-        ws.on('message', (user: string) => {
-            const res = createUser(user, transporter);
+        ws.on('message', async (email: string) => {
+            const res: string = await createUser(email, transporter);
             ws.send(res);
         });
 

@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/shashoto-nur/skydrive#readme",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
     "dotenv": "^15.0.0",
@@ -33,13 +34,16 @@
     "mongoose": "^6.1.9",
     "nodemailer": "^6.7.2",
     "telegraf": "^4.6.0",
+    "validator": "^13.7.0",
     "ws": "^8.4.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/cron": "^1.7.3",
     "@types/express": "^4.17.13",
     "@types/node": "^17.0.13",
     "@types/nodemailer": "^6.4.4",
+    "@types/validator": "^13.7.1",
     "@types/ws": "^8.2.2",
     "nodemon": "^2.0.15",
     "ts-node": "^10.4.0",

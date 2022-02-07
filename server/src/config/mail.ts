@@ -22,7 +22,11 @@ interface MailDataType {
     subject: string;
 };
 
-async function sendMail(mailData: MailDataType, transporter: Transporter<SMTPTransport.SentMessageInfo>) {
+async function sendMail(
+    mailData: MailDataType,
+    transporter: Transporter<SMTPTransport.SentMessageInfo>,
+    callback: (response: any) => void
+) {
     const { receiver, text, subject } = mailData;
     const mailOptions = {
         from: process.env.MAIL_USER,
@@ -32,8 +36,8 @@ async function sendMail(mailData: MailDataType, transporter: Transporter<SMTPTra
     };
 
     transporter.sendMail(mailOptions, function(error, info){
-        if (error) console.log(error);
-        else console.log('Email sent: ' + info.response);
+        if (error) throw error;
+        else return callback('Email sent: ' + info.response);
     });
 };
 

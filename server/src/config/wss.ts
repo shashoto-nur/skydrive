@@ -1,21 +1,20 @@
-import * as WebSocket from 'ws';
+import { Server } from "socket.io";
 
 import served from '../server';
 import createUser from '../controllers/users/createUser';
 
 
 function initiateWSS(server: any) {
-    const wss = new WebSocket.Server({ server });
+    const io = new Server(server);
     const { transporter } = served;
 
-    wss.on('connection', (ws: WebSocket) => {
-
-        ws.on('message', async (email: string) => {
-            const res: string = await createUser(email, transporter);
-            ws.send(res);
+    io.on('connection', (socket: any) => {
+        socket.on('signup', async ({ email }: { email: string }) => {
+            const res = await createUser(email, transporter);
+            socket.emit('response', { res });
         });
 
-        ws.send('Websocket server online...');
+        socket.send({ res: 'Connected to server...'});
     });
 
     console.log(' Websocket server online...');

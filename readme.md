@@ -13,8 +13,9 @@
 
     SignUp [create User object]
     Store email & generated hashed otp into database
+    Switch to socket.io
     Initiate login (email, update password)
-    Add Workspace (create ws, encrypt id & modify user)
+    Add Space (encrypt id & modify user)
     Setup Pin lock (local & global)
     Set cookies (auth, encryption)
     Logout (rm cookies & pin)
@@ -26,7 +27,7 @@
     Generate cryptokey from hashed (password & file_id)
     Split, Encrypt, Send & Store chunk
     Create chunk object
-    Update Workspace
+    Update Space
 
 ## Download File
 
@@ -48,7 +49,7 @@
 
 ## File System
 
-    Update database file & Workspace
+    Update database file & Space
     Delete telegram file
     Query files in database
     Change system view, file sortion
@@ -61,6 +62,6 @@
 ### Models
 
     User (email, password, otp, ws, pin, avatar)
-    Workspace (id, preferences, bookmarks)
+    Space (id, preferences, bookmarks)
     File (id, name, description, created, location, chunks, type)
     Chunks (id, file_id, position)

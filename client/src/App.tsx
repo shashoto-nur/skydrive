@@ -1,9 +1,14 @@
 import { useEffect } from 'react';
 import { io } from "socket.io-client";
+import {
+    Routes,
+    Route
+} from "react-router-dom";
 
 import logo from './logo.svg';
 import { Counter } from './features/counter/Counter';
 import SignUp from './features/signup/Signup';
+import Login from './features/login/Login';
 import './App.css';
 import { useAppDispatch } from './app/hooks';
 import { setGlobalSocketID } from './AppReducer';
@@ -39,8 +44,14 @@ const App = () => {
             console.log("Socket disconnected");
         });
 
-        socket.on("response", ({ res }) => {
+        socket.on("SIGNUP_RESPONSE", ({ res }) => {
             console.log("Socket response: ", { res });
+        });
+
+        socket.on("LOGIN_RESPONSE", ({ res }) => {
+            console.log("Socket response: ", { res });
+            const token = res.token;
+            localStorage.setItem('token', token);
         });
 
         socket.on("message", ({ res }) => {
@@ -53,7 +64,10 @@ const App = () => {
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
                 <Counter /> <br />
-                <SignUp />
+                <Routes>
+                    <Route path="/" element={ <SignUp /> } />
+                    <Route path="login" element={ <Login /> } />
+                </Routes>
             </header>
         </div>
     );

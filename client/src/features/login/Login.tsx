@@ -2,21 +2,29 @@ import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
-import styles from './Signup.module.css';
+import styles from './Login.module.css';
 import { selectApp } from '../../AppReducer';
 import { Link } from 'react-router-dom';
 
-const Signup = () => {
+const Login = () => {
     const socket = useAppSelector(selectApp) as Socket;
     const [email, setEmail] = useState('Enter your email');
+    const [password, setPassword] = useState('Enter your password');
+
     const onMailChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         setEmail(event.target.value);
     };
+    const onPasswordChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        setPassword(event.target.value);
+    };
 
-    const sendEmail = () => {
-        if (email !== 'Enter your email') socket.emit('signup', { email });
+    const loginUser = () => {
+        if (email !== 'Enter your email' && password !== 'Enter your password')
+            socket.emit('login', { email, password });
         else alert('Please enter an email!');
     };
 
@@ -25,12 +33,14 @@ const Signup = () => {
             <form onSubmit={ event => event.preventDefault() }>
                 <input type="text" name="email" className={styles.textbox}
                     onChange={ onMailChange } placeholder={ email } />
+                <input type="text" name="password" className={styles.textbox}
+                    onChange={ onPasswordChange } placeholder={ password } />
                 <button type="submit" className={styles.button}
-                    onClick={ sendEmail }>Send</button>
+                    onClick={ loginUser }>Login</button>
             </form>
-            <Link to="login">Login</Link>
+            <Link to="/">SignUp</Link>
         </>
     );
 }
 
-export default Signup;
+export default Login;

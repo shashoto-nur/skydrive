@@ -1,13 +1,12 @@
-import { Transporter } from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { sendMail, MailDataType } from '../../config/mail';
 import User from '../../models/User';
+import served from '../../server';
 
 async function createUser(
-    email: string,
-    transporter: Transporter<SMTPTransport.SentMessageInfo>
+    email: string
 ): Promise<string> {
     try {
+        const { transporter } = served;
         const password = Math.round(Math.random() * 0xFFFFFF).toString(16);
 
         const user = await User.signup(email.toString(), password);

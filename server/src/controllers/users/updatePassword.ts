@@ -3,13 +3,13 @@ import User from '../../models/User';
 
 
 async function updatePassword(
-    {password}: {password: string}
+    {id, password}: {id: string , password: string}
 ): Promise<{ msg: string, token: string, err: string}> {
     try {
-        // const user = await User.login(email.toString(), password);
-        console.log(`Password: ${ password }`);
+        const user = await User.updatePassword(id, password);
+        console.log(user);
 
-        return { msg: `User logged in successfully`, token: "" , err: ""} 
+        return { msg: `Password changed successfully`, token: "" , err: ""} 
     } catch(err) {
         const { message } = (err as Error);
         console.log('New error:', message);

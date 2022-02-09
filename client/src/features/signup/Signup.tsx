@@ -28,6 +28,7 @@ const Signup = () => {
                 <button type="submit" className={styles.button}
                     onClick={ sendEmail }>Send</button>
             </form>
+            <Link to="/profile">Profile</Link>
             <Link to="login">Login</Link>
         </>
     );

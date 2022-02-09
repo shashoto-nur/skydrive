@@ -39,6 +39,7 @@ const Login = () => {
                     onClick={ loginUser }>Login</button>
             </form>
             <Link to="/">SignUp</Link>
+            <Link to="/profile">Profile</Link>
         </>
     );
 }

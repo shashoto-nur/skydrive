@@ -12,19 +12,21 @@ import Login from './features/login/Login';
 import './App.css';
 import { useAppDispatch } from './app/hooks';
 import { setGlobalSocketID } from './AppReducer';
+import Profile from './features/profile/Profile';
 
 const App = () => {
-    const token = localStorage.getItem('token') as String;
     const uri = "http://127.0.0.1:5000/";
     const socket = io(uri, {
         transports: ["websocket", "polling"],
-        auth: cb => { cb(token); }
+        auth: { token: localStorage.getItem('token') }
     });
     const dispatch = useAppDispatch();
 
     useEffect(() => {
         dispatch(setGlobalSocketID(socket))
-        socket.on("connect_error", () => {
+        socket.on("connect_error", (err) => {
+            console.log(`connect_error due to ${err.message}`);
+
             let runCount = 0;
             function tryToConnect() {
                 runCount++;
@@ -45,13 +47,17 @@ const App = () => {
         });
 
         socket.on("SIGNUP_RESPONSE", ({ res }) => {
-            console.log("Socket response: ", { res });
+            console.log("SignUp response: ", { res });
         });
 
         socket.on("LOGIN_RESPONSE", ({ res }) => {
-            console.log("Socket response: ", { res });
+            console.log("Login response: ", { res });
             const token = res.token;
             localStorage.setItem('token', token);
+        });
+
+        socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
+            console.log("Password update response: ", { res });
         });
 
         socket.on("message", ({ res }) => {
@@ -67,6 +73,7 @@ const App = () => {
                 <Routes>
                     <Route path="/" element={ <SignUp /> } />
                     <Route path="login" element={ <Login /> } />
+                    <Route path="profile" element={ <Profile /> } />
                 </Routes>
             </header>
         </div>

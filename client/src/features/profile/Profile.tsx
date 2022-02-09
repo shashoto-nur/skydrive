@@ -28,9 +28,10 @@ const Profile = () => {
                 <input type="text" name="password" className={styles.textbox}
                     onChange={ onPasswordChange } placeholder={ password } />
                 <button type="submit" className={styles.button}
-                    onClick={ updatePassword }>Login</button>
+                    onClick={ updatePassword }>Update</button>
             </form>
             <Link to="/">SignUp</Link>
+            <Link to="/login">Login</Link>
         </>
     );
 }

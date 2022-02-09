@@ -5,7 +5,7 @@ import { AddressInfo } from 'net';
 import { CronJob } from 'cron';
 
 import initApp from './config/app';
-import initiateWSS from './config/wss';
+import initiateSocket from './config/wss';
 import connectToDatabase from './config/db';
 import { initiateTransport } from './config/mail';
 import initiateBot from './config/bot';
@@ -20,7 +20,7 @@ const bot = initiateBot();
 
     const app = initApp();
     const server = http.createServer(app);
-    initiateWSS(server);
+    initiateSocket(server);
 
     new CronJob('0 0 0 * * *', function() {
         console.log("Runs every day at 12:00 AM");

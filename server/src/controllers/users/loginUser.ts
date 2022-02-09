@@ -1,6 +1,13 @@
 import jwt from 'jsonwebtoken';
 import User from '../../models/User';
 
+interface ResObj {
+    msg: string,
+    token: string,
+    err: string,
+    id: string
+}
+
 const createToken = (id: string) => {
     const token = jwt.sign(
         { id },
@@ -12,17 +19,17 @@ const createToken = (id: string) => {
 
 async function loginUser(
     {email, password}: {email: string, password: string}
-): Promise<{ msg: string, token: string, err: string}> {
+): Promise<{ msg: string, token: string, err: string, id: string }> {
     try {
-        const user = await User.login(email.toString(), password);
-        console.log(`User login: ${ user._id }`);
-        const token = createToken(user._id);
+        const id = (await User.login(email.toString(), password))._id;
+        const token = createToken(id);  
+        const res = { msg: `User logged in successfully`, token , err: "", id };
 
-        return { msg: `User logged in successfully`, token , err: ""} 
+        return res;
     } catch(err) {
         const { message } = (err as Error);
         console.log('New error:', message);
-        return { msg: `Login failed`, token: '' , err: message };
+        return { msg: `Login failed`, token: '' , err: message, id:"" };
     };
 };
 

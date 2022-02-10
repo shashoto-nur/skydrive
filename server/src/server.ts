@@ -2,12 +2,12 @@ require('dotenv').config();
 
 import http from 'http';
 import { AddressInfo } from 'net';
-import { CronJob } from 'cron';
 
 import initApp from './config/app';
-import initiateSocket from './config/wss';
+import initiateSocket from './config/socket';
 import connectToDatabase from './config/db';
-import { initiateTransport } from './config/mail';
+import startCron from './config/cron';
+import initiateTransport from './config/mail';
 import initiateBot from './config/bot';
 
 console.clear();
@@ -21,10 +21,7 @@ const bot = initiateBot();
     const app = initApp();
     const server = http.createServer(app);
     initiateSocket(server);
-
-    new CronJob('0 0 0 * * *', function() {
-        console.log("Runs every day at 12:00 AM");
-    }, null, true, 'America/Los_Angeles');
+    startCron();
 
     server.listen(process.env.PORT || 5000, () => {
         const { port } = server!.address() as AddressInfo;

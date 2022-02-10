@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 
 import setUserID from "../utils/setUserID";
 import setUserRoutes from "../routes/user";
+import setSpacesRoutes from "../routes/spaces";
 
 function initiateSocket(server: any) {
     const io = new Server(server);
@@ -12,6 +13,7 @@ function initiateSocket(server: any) {
     })
     .on('connection', (socket: any) => {
         setUserRoutes(socket);
+        setSpacesRoutes(socket);
 
         console.log('Socket connected:', socket.id);
         socket.send({ res: 'Connected to server...'});

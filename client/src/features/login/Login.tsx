@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
@@ -8,6 +8,16 @@ import { Link } from 'react-router-dom';
 
 const Login = () => {
     const socket = useAppSelector(selectApp) as Socket;
+    useEffect(() => {
+        if(socket) {
+            socket.on("LOGIN_RESPONSE", ({ res }) => {
+                console.log("Login response: ", { res });
+                const token = res.token;
+                localStorage.setItem('token', token);
+            });
+        }
+    }, [socket]);
+
     const [email, setEmail] = useState('Enter your email');
     const [password, setPassword] = useState('Enter your password');
 

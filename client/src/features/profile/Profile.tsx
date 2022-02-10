@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
@@ -8,8 +8,16 @@ import { Link } from 'react-router-dom';
 
 const Profile = () => {
     const socket = useAppSelector(selectApp) as Socket;
-    const [password, setPassword] = useState('New password');
 
+    useEffect(() => {
+        if(socket) {
+            socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
+                console.log("Password update response: ", { res });
+            });
+        }
+    }, [socket]);
+
+    const [password, setPassword] = useState('New password');
     const onPasswordChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {

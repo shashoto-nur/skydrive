@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
@@ -8,6 +8,14 @@ import { Link } from 'react-router-dom';
 
 const Signup = () => {
     const socket = useAppSelector(selectApp) as Socket;
+    useEffect(() => {
+        if(socket) {
+            socket.on("SIGNUP_RESPONSE", ({ res }) => {
+                console.log("SignUp response: ", { res });
+            });
+        }
+    }, [socket]);
+
     const [email, setEmail] = useState('Enter your email');
     const onMailChange = (
         event: React.ChangeEvent<HTMLInputElement>

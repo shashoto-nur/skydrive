@@ -1,5 +1,4 @@
-import { createTransport, Transporter } from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { createTransport } from "nodemailer";
 
 function initiateTransport() {
     const transporter = createTransport({
@@ -16,29 +15,4 @@ function initiateTransport() {
     return transporter;
 };
 
-interface MailDataType {
-    receiver: string;
-    text: string;
-    subject: string;
-};
-
-async function sendMail(
-    mailData: MailDataType,
-    transporter: Transporter<SMTPTransport.SentMessageInfo>,
-    callback: (response: any) => void
-) {
-    const { receiver, text, subject } = mailData;
-    const mailOptions = {
-        from: process.env.MAIL_USER,
-        to: receiver,
-        subject,
-        text
-    };
-
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) throw error;
-        else return callback('Email sent: ' + info.response);
-    });
-};
-
-export { initiateTransport, sendMail, MailDataType };
+export default initiateTransport;

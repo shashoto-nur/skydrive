@@ -1,14 +1,9 @@
 import { useEffect } from 'react';
 import { io } from "socket.io-client";
-import {
-    Routes,
-    Route
-} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import SignUp from './features/signup/Signup';
-import Login from './features/login/Login';
+import { Counter, SignUp, Login, Spaces } from './features';
 import './App.css';
 import { useAppDispatch } from './app/hooks';
 import { setGlobalSocketID } from './AppReducer';
@@ -46,20 +41,6 @@ const App = () => {
             console.log("Socket disconnected");
         });
 
-        socket.on("SIGNUP_RESPONSE", ({ res }) => {
-            console.log("SignUp response: ", { res });
-        });
-
-        socket.on("LOGIN_RESPONSE", ({ res }) => {
-            console.log("Login response: ", { res });
-            const token = res.token;
-            localStorage.setItem('token', token);
-        });
-
-        socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
-            console.log("Password update response: ", { res });
-        });
-
         socket.on("message", ({ res }) => {
             console.log("Socket response: ", { res });
         });
@@ -74,6 +55,7 @@ const App = () => {
                     <Route path="/" element={ <SignUp /> } />
                     <Route path="login" element={ <Login /> } />
                     <Route path="profile" element={ <Profile /> } />
+                    <Route path="spaces" element={ <Spaces /> } />
                 </Routes>
             </header>
         </div>

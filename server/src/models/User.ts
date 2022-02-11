@@ -7,16 +7,16 @@ interface IUser {
     email: string;
     password: string;
     verified: boolean;
-    space: { name: string }
-}
+    spaces: string;
+};
 
 interface UserModel extends Model<IUser> {
     signup: (email: string, password: string) => any;
     login: (email: string, password: string) => any;
     updatePassword: (id: string, password: string) => any;
-    createSpace: (id: string, space: string) => any;
-    getSpaces: (id: string) => any;
-}
+    getEncSpaces: (id: string) => string;
+    addSpaceIds: (id: string, spaceIds: string) => any;
+};
 
 const userSchema = new Schema<IUser, UserModel>({
     email: {
@@ -31,11 +31,9 @@ const userSchema = new Schema<IUser, UserModel>({
         required: [true, 'Please enter a password'],
     },
     verified: { type: Boolean, default: false },
-    space: {
-        name: {
-            type: String,
-            required: [true, 'Please enter name for your space'],
-        }
+    spaces: {
+        type: String,
+        default: ''
     },
 });
 
@@ -52,7 +50,6 @@ userSchema.static('signup', async function(email, password) {
 
 userSchema.static('login', async function(email, password) {
     const user = await this.findOne({ email });
-
     if (!user) throw Error('Incorrect email');
 
     const auth = await bcrypt.compare(password, user.password);
@@ -69,21 +66,19 @@ userSchema.static('updatePassword', async function(id, password) {
     return user;
 });
 
-userSchema.static('createSpace', async function(id, space) {
-    try {
-        const user = await User.findByIdAndUpdate(id, { space });
-        return user;
-    } catch (error) {
-        console.log('New error:', error);
-    };
-});
-
-userSchema.static('getSpaces', async function(id) {
+userSchema.static('getEncSpaces', async function(id) {
     const user = await User.findById(id);
     if (!user) throw Error('Incorrect email');
 
-    const spaces = user.space;
+    const { spaces } = user;
     return spaces;
+});
+
+userSchema.static('addSpaceIds', async function(userId, spaceIds) {
+    const user = await User.findByIdAndUpdate(userId, { spaces: spaceIds });
+    if (!user) throw Error('Incorrect email');
+
+    return user;
 });
 
 const User = model<IUser, UserModel>('user', userSchema);

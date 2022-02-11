@@ -63,5 +63,5 @@
 
     User (email, password, verified, space, pin, profile)
     Space (id, name, preferences, bookmarks)
-    File (id, name, description, created, location, chunks, type)
-    Chunks (id, file_id, position)
+        File (id, name, description, created, location, chunks, type)
+            Chunks (id, file_id, position)

@@ -4,7 +4,6 @@ import { Socket } from "socket.io-client";
 import { useAppSelector } from '../../app/hooks';
 import styles from './Login.module.css';
 import { selectApp } from '../../AppReducer';
-import { Link } from 'react-router-dom';
 
 const Login = () => {
     const socket = useAppSelector(selectApp) as Socket;
@@ -48,8 +47,6 @@ const Login = () => {
                 <button type="submit" className={styles.button}
                     onClick={ loginUser }>Login</button>
             </form>
-            <Link to="/">SignUp</Link>
-            <Link to="/profile">Profile</Link>
         </>
     );
 }

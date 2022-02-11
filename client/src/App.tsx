@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { io } from "socket.io-client";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 
 import logo from './logo.svg';
 import { Counter, SignUp, Login, Spaces } from './features';
@@ -49,6 +49,10 @@ const App = () => {
     return (
         <div className="App">
             <header className="App-header">
+                <Link to="/">SignUp</Link>
+                <Link to="/login">Login</Link>
+                <Link to="profile">Profile</Link>
+                <Link to="/spaces">Spaces</Link>
                 <img src={logo} className="App-logo" alt="logo" />
                 <Counter /> <br />
                 <Routes>

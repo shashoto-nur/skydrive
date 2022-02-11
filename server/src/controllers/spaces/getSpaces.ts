@@ -1,14 +1,13 @@
-import User from '../../models/User';
+import Space, { ISpace } from '../../models/Space';
 
 async function getSpaces(
-    id: string
-): Promise<string> {
+    ids: string[]
+): Promise<string | ISpace[]> {
     try {
-        const spaces = await User.getSpaces(id);
-        console.log(`Getting spaces: ${ spaces }`);
-
+        const spaces = await Space.getSpaces(ids);
         return spaces;
     } catch(err) {
+
         const { message } = (err as Error);
         console.log('New error:', message);
         return message;

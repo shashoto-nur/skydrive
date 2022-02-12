@@ -15,8 +15,7 @@ interface UserModel extends Model<ISpace> {
 const spaceSchema = new Schema<ISpace, UserModel>({
     name: {
         type: String,
-        required: [true, 'Please enter a name'],
-        unique: true,
+        required: [true, 'Please enter a name']
     },
     preferences: {
         type: [String]
@@ -28,7 +27,7 @@ const spaceSchema = new Schema<ISpace, UserModel>({
 
 spaceSchema.static('createSpace', async function(name) {
     try {
-        const space: ISpace = await this.create({ name });
+        const space: ISpace = await Space.create({ name });
         return space;
     } catch (error) {
         console.log('New error:', error);
@@ -36,7 +35,7 @@ spaceSchema.static('createSpace', async function(name) {
 });
 
 spaceSchema.static('getSpaces', async function(ids) {
-    const spaces = await this.find({ '_id': { $in: ids } });
+    const spaces = await Space.find({ '_id': { $in: ids } });
     return spaces;
 });
 

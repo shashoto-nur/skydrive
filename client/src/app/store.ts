@@ -1,22 +1,26 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import AppReducer from '../AppReducer';
 import counterReducer from '../features/counter/counterSlice';
+import loginReducer from '../features/login/loginSlice';
+import spacesReducer from '../features/spaces/spacesSlice';
 
 
 export const store = configureStore({
   reducer: {
     app: AppReducer,
-    counter: counterReducer
+    counter: counterReducer,
+    login: loginReducer,
+    spaces: spacesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         // Ignore these action types
-        ignoredActions: ['app/setGlobalSocketID'],
+        ignoredActions: ['app/setGlobalSocketID', 'login/setGlobalKey', "login/setGlobalAlgorithm"],
         // Ignore these field paths in all actions
         ignoredActionPaths: ['meta.arg', 'payload.timestamp'],
         // Ignore these paths in the state
-        ignoredPaths: ['app.socket'],
+        ignoredPaths: ['app.socket', 'login.key', 'login.algorithm.iv'],
       },
     }),
 });

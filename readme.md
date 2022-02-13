@@ -20,6 +20,7 @@
     Set cookies (auth, encryption)
     Logout (rm cookies & pin)
     Profile modification (avatar, password reset, delete user)
+    oAuth
 
 ## Upload File
 

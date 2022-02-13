@@ -1,25 +1,20 @@
-
-import logError from './logError';
 import variables from '../env/variables';
 
-// The algorithm to encrypt the file using webcrypto
 const getAlgorithm = (passkey: string) => {
     try {
-        // Get a string of IV_SIZE chars from passkey
         const repetitons = Math.floor(variables.IV_SIZE/passkey.length);
         const stringVector = ((repetitons === 0)
             ? passkey
             : passkey.repeat(repetitons + 1))
                 .substring(0, variables.IV_SIZE);
 
-        // Create a Uint8Array iv from string
         const bitVector = new TextEncoder().encode(stringVector);
+        const algorithm = { name: variables.ALGO, iv: bitVector };
 
-        return { name: variables.ALGO, iv: bitVector };
+        return algorithm;
 
-    } catch ({ message }) { logError(message as string); };
+    } catch (err) { console.log(err); };
 
 };
-
 
 export default getAlgorithm;

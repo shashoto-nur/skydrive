@@ -3,11 +3,10 @@ import { io } from "socket.io-client";
 import { Routes, Route, Link } from "react-router-dom";
 
 import logo from './logo.svg';
-import { Counter, SignUp, Login, Spaces } from './features';
+import { Counter, SignUp, Profile, Login, Spaces, Pin } from './features';
 import './App.css';
 import { useAppDispatch } from './app/hooks';
 import { setGlobalSocketID } from './AppReducer';
-import Profile from './features/profile/Profile';
 
 const App = () => {
     const uri = "http://127.0.0.1:5000/";
@@ -18,7 +17,7 @@ const App = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(setGlobalSocketID(socket))
+        dispatch(setGlobalSocketID(socket));
         socket.on("connect_error", (err) => {
             console.log(`connect_error due to ${err.message}`);
 
@@ -44,7 +43,8 @@ const App = () => {
         socket.on("message", ({ res }) => {
             console.log("Socket response: ", { res });
         });
-    }, [dispatch, socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket]);
 
     return (
         <div className="App">
@@ -53,6 +53,7 @@ const App = () => {
                 <Link to="/login">Login</Link>
                 <Link to="profile">Profile</Link>
                 <Link to="/spaces">Spaces</Link>
+                <Link to="pin">Pin</Link>
                 <img src={logo} className="App-logo" alt="logo" />
                 <Counter /> <br />
                 <Routes>
@@ -60,6 +61,7 @@ const App = () => {
                     <Route path="login" element={ <Login /> } />
                     <Route path="profile" element={ <Profile /> } />
                     <Route path="spaces" element={ <Spaces /> } />
+                    <Route path="pin" element={ <Pin /> } />
                 </Routes>
             </header>
         </div>

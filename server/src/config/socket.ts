@@ -1,8 +1,8 @@
 import { Server } from "socket.io";
 
 import setUserID from "../utils/setUserID";
-import setUserRoutes from "../routes/user";
-import setSpacesRoutes from "../routes/spaces";
+import setUserEvents from "../events/user";
+import setSpacesEvents from "../events/spaces";
 
 function initiateSocket(server: any) {
     const io = new Server(server);
@@ -12,8 +12,8 @@ function initiateSocket(server: any) {
         next();
     })
     .on('connection', (socket: any) => {
-        setUserRoutes(socket);
-        setSpacesRoutes(socket);
+        setUserEvents(socket);
+        setSpacesEvents(socket);
 
         console.log('Socket connected:', socket.id);
         socket.send({ res: 'Connected to server...'});

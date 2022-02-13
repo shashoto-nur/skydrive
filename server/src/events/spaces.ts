@@ -1,6 +1,6 @@
 import { createSpace, getSpaces } from '../controllers/spaces/';
 
-const setSpacesRoutes = (socket: any) => {
+const setSpacesEvents = (socket: any) => {
     socket.on('create_space', async ({ space }: { space: string }) => {
         if(socket.handshake.auth.userId) {
             const res = await createSpace(space);
@@ -18,4 +18,4 @@ const setSpacesRoutes = (socket: any) => {
     });
 };
 
-export default setSpacesRoutes;
+export default setSpacesEvents;

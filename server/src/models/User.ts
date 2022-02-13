@@ -16,6 +16,7 @@ interface UserModel extends Model<IUser> {
     updatePassword: (id: string, password: string) => any;
     getEncSpaces: (id: string) => string;
     addSpaceIds: (id: string, spaceIds: string) => any;
+    addGlobalPin: (pin: string, userId: string) => any;
 };
 
 const userSchema = new Schema<IUser, UserModel>({
@@ -77,6 +78,14 @@ userSchema.static('getEncSpaces', async function(id) {
 userSchema.static('addSpaceIds', async function(userId, spaceIds) {
     const user = await User.findByIdAndUpdate(userId, { spaces: spaceIds });
     if (!user) throw Error('Incorrect email');
+
+    return user;
+});
+
+userSchema.static('addGlobalPin', async function(id, pin) {
+    const hashedPin = (await bcrypt.hash(pin, 10)).toString();
+    const user = await User.findByIdAndUpdate(id, { pin: hashedPin });
+    if (!user) throw Error('Invalid token');
 
     return user;
 });

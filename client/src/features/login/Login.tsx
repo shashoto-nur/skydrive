@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from "socket.io-client";
 
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import styles from './Login.module.css';
 import { selectApp } from '../../AppReducer';
+import deriveKey from '../../utils/deriveKey';
+import getAlgorithm from '../../utils/getAlgorithm';
+import { setGlobalAlgorithm, setGlobalKey, setGlobalPassword } from './loginSlice';
 
 const Login = () => {
     const socket = useAppSelector(selectApp) as Socket;
+    const dispatch = useAppDispatch();
     useEffect(() => {
         if(!socket) return;
         socket.on("LOGIN_RESPONSE", ({ res }) => {
@@ -32,11 +36,18 @@ const Login = () => {
         setPassword(event.target.value);
     };
 
-    const loginUser = (event: React.FormEvent<HTMLFormElement>) => {
+    const loginUser = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (email !== 'Enter your email' && password !== 'Enter your password') {
             socket.emit('login', { email, password });
-            localStorage.setItem('passkey', password);
+            dispatch(setGlobalPassword(password));
+
+            const key = await deriveKey(password);
+            const algorithm = getAlgorithm(password);
+
+            if(!key || !algorithm) return;
+            dispatch(setGlobalKey(key));
+            dispatch(setGlobalAlgorithm(algorithm));
         } else alert('Enter your email and password!');
     };
 

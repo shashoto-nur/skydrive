@@ -1,5 +1,4 @@
 
-import logError from './logError';
 import variables from '../env/variables';
 
 const deriveKey = async (passkey: string) => {
@@ -27,7 +26,7 @@ const deriveKey = async (passkey: string) => {
         const key = getKey(cryptoKey);
         return key;
 
-    } catch ({ message }) { logError(message as string); };
+    } catch ({ message }) { console.log(message as string); };
 
 };
 

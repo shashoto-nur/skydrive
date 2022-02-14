@@ -19,7 +19,6 @@
     Setup Pin lock (local & global)
     Set cookies (auth, encryption)
     Logout (rm cookies & pin)
-    Profile modification (avatar, password reset, delete user)
     oAuth
 
 ## Upload File
@@ -51,12 +50,13 @@
 ## File System
 
     Update database file & Space
-    Delete telegram file
+    Delete storage file
     Query files in database
     Change system view, file sortion
 
 ## Completion
 
+    Profile modification (avatar, password reset, delete user)
     Installable web app
     Tutorials & Docs
 

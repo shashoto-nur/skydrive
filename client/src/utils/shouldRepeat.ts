@@ -1,7 +1,4 @@
-
-import logError from './logError';
 import variables from '../env/variables';
-
 
 const shouldRepeat = (fileSize: number, end: number) => {
     try {
@@ -14,12 +11,9 @@ const shouldRepeat = (fileSize: number, end: number) => {
         } else return [false, undefined, undefined];
 
     } catch ({ message }) {
-        logError(message as string);
+        console.log(message as string);
         return [false, undefined, undefined];
-
     };
-
 };
-
 
 export default shouldRepeat;

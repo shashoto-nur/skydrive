@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from "socket.io-client";
+import { GoogleLogin } from 'react-google-login';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import styles from './Login.module.css';
@@ -55,8 +56,29 @@ const Login = () => {
         } else alert('Enter your email and password!');
     };
 
+    const oAuthFailure = (error: any) => {
+        console.log('oAuthFailure: ', error);
+    };
+
+    const oAuthSuccess = (data: any) => {
+        socket.emit('oauth_login', { oauthToken: data.tokenId });
+    };
+
     return (
         <>
+            <GoogleLogin
+                clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
+                render={renderProps => (
+                    <button
+                        onClick={renderProps.onClick}
+                        className={styles.button}
+                        disabled={renderProps.disabled}
+                    > Google Login </button>
+                )}
+                onSuccess={oAuthSuccess}
+                onFailure={oAuthFailure}
+                cookiePolicy={'single_host_origin'}
+            /> <br/>
             <form onSubmit={ loginUser }>
                 <input type="text" name="email" className={styles.textbox}
                     onChange={ onMailChange } placeholder={ email } />

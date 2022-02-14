@@ -49,11 +49,14 @@ const App = () => {
     return (
         <div className="App">
             <header className="App-header">
-                <Link to="/">SignUp</Link>
-                <Link to="/login">Login</Link>
-                <Link to="profile">Profile</Link>
-                <Link to="/spaces">Spaces</Link>
-                <Link to="pin">Pin</Link>
+                <Link className="Link" to="/">SignUp</Link>
+                <Link className="Link" to="/login">Login</Link>
+                <Link className="Link" to="profile">Profile</Link>
+                <Link className="Link" to="/spaces">Spaces</Link>
+                <Link className="Link" to="pin">Pin</Link>
+                <br />
+                <button className="button"
+                    onClick={ () => localStorage.clear() }>Logout</button>
                 <img src={logo} className="App-logo" alt="logo" />
                 <Counter /> <br />
                 <Routes>

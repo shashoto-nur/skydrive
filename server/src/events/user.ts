@@ -1,4 +1,12 @@
-import { createUser, loginUser, updatePassword, getEncSpaces, addSpaceIds, addGlobalPin } from '../controllers/users/';
+import {
+    createUser,
+    loginUser,
+    oauthLoginUser,
+    updatePassword,
+    getEncSpaces,
+    addGlobalPin,
+    addSpaceIds
+} from '../controllers/users/';
 
 const setUserEvents = (socket: any) => {
     socket.on('signup', async ({ email }: { email: string }) => {
@@ -8,6 +16,13 @@ const setUserEvents = (socket: any) => {
 
     socket.on('login', async ({ email, password }: { email: string, password: string }) => {
         const { msg, token , err, id } = await loginUser({ email, password });
+        socket.handshake.auth.userId = id;
+        const res = { msg, token , err };
+        socket.emit('LOGIN_RESPONSE', { res } );
+    });
+
+    socket.on('oauth_login', async ({ oauthToken }: { oauthToken: string }) => {
+        const { msg, token , err, id } = await oauthLoginUser({ oauthToken });
         socket.handshake.auth.userId = id;
         const res = { msg, token , err };
         socket.emit('LOGIN_RESPONSE', { res } );
@@ -30,7 +45,7 @@ const setUserEvents = (socket: any) => {
         socket.emit('ADD_SPACE_RESPONSE', { res } );
     });
 
-    socket.on('add_pin', async (pin: string) => {
+    socket.on('add_pin', async ({pin}:{pin: string}) => {
         const userId: string = socket.handshake.auth.userId;
         const res = await addGlobalPin(pin, userId);
         socket.emit('ADD_PIN_RESPONSE', { res } );

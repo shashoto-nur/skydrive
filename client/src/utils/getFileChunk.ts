@@ -1,6 +1,3 @@
-
-import logError from './logError';
-
 const reader = new FileReader();
 
 // Get the binary file data
@@ -25,7 +22,7 @@ const getFileChunk = (file: File, start: number, end: number) => {
                 };
             };
 
-        } catch ({ message }) { logError(message as string); };
+        } catch ({ message }) { console.log(message as string); };
 
     });
 

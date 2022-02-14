@@ -9,7 +9,7 @@ export interface ISpace {
 };
 
 export interface SpacesState {
-  spaces: ISpace[] | [''];
+  spaces: string[];
 }
 
 const initialState: SpacesState = {
@@ -20,7 +20,7 @@ export const spacesSlice = createSlice({
   name: 'spaces',
   initialState,
   reducers: {
-    setGlobalSpaces: (state, action: PayloadAction<ISpace[]>) => {
+    setGlobalSpaces: (state, action: PayloadAction<string[]>) => {
       const socket = action.payload;
       state.spaces = socket;
     },

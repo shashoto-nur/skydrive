@@ -12,9 +12,9 @@ async function addSpaceIds(
         const text = `New space created for user:${ user.id }`;  
         const subject = 'Space created';
         const mailData: MailDataType = { receiver: user.email, text, subject };
-        // await sendMail(mailData, function(response) {
-        //     console.log(response);
-        // });
+        await sendMail(mailData, function(response) {
+            console.log(response);
+        });
 
         return user.spaces;
     } catch(err) {

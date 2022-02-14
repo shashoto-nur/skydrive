@@ -19,6 +19,10 @@ const Login = () => {
             localStorage.setItem('token', token);
         });
 
+        return () => {
+            socket.off("LOGIN_RESPONSE");
+        };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 

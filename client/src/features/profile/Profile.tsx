@@ -9,11 +9,15 @@ const Profile = () => {
     const socket = useAppSelector(selectApp) as Socket;
 
     useEffect(() => {
-        if(socket) {
-            socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
-                console.log("Password update response: ", { res });
-            });
-        }
+        if(!socket) return; 
+        socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
+            console.log("Password update response: ", { res });
+        });
+
+        return () => {
+            socket.off("UPDATE_PASSWORD_RESPONSE");
+        };
+        
     }, [socket]);
 
     const [password, setPassword] = useState('New password');

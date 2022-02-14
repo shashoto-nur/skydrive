@@ -19,6 +19,10 @@ const Login = () => {
         socket.on("ADD_PIN_RESPONSE", ({ res }) => {
             console.log("Add pin response: ", { res });
         });
+
+        return () => {
+            socket.off("ADD_PIN_RESPONSE");
+        };
     }, [socket]);
 
     const [isGlobal, setIsGlobal] = useState(false);

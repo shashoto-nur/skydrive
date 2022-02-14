@@ -6,7 +6,7 @@ import styles from './Spaces.module.css';
 import { selectApp } from '../../AppReducer';
 
 import { selectAlgorithm, selectKey, setGlobalAlgorithm, setGlobalKey } from '../login/loginSlice';
-import { setGlobalSpaces, ISpace, selectSpaces } from "./spacesSlice";
+import { ISpace } from "./spacesSlice";
 
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
@@ -14,9 +14,8 @@ import { encryptStr, decryptStr } from '../../utils/cryptoString';
 
 const Spaces = () => {
     const socket = useAppSelector(selectApp) as Socket;
-    const selectorSpaces = useAppSelector(selectSpaces);
-    const [spaces, setSpaces] = useState(selectorSpaces);
     const dispatch = useAppDispatch();
+
     let key = useAppSelector(selectKey) as CryptoKey;
     let algorithm = useAppSelector(selectAlgorithm) as { name: string; iv: Uint8Array; };
 
@@ -32,18 +31,6 @@ const Spaces = () => {
     const createSpace = () => {
         if (space !== 'New space') socket.emit('create_space', { space });
         else alert('Enter a name for your space!');
-    };
-
-    const updateSpaces = async (newSpace: string) => {
-        console.log(spaces);
-        const updatedSpaces = [...spaces, newSpace].filter(el => el !== '');
-        setSpaces(updatedSpaces as ISpace[]);
-
-        const string = JSON.stringify(updatedSpaces);
-        console.log(string)
-        const encSpaceIds = await encryptStr(string, algorithm, key);
-
-        return encSpaceIds;
     };
 
     useEffect(() => {
@@ -72,11 +59,9 @@ const Spaces = () => {
                 if(!res) return;
 
                 const decString = await decryptStr(res, algorithm, key);
-                const spaceIds: ISpace[] = JSON.parse(decString);
-                dispatch(setGlobalSpaces(spaceIds));
+                const receivedSpaces: string[] = JSON.parse(decString);
 
-                setSpaces(spaceIds);
-                socket.emit('get_spaces', spaceIds);
+                socket.emit('get_spaces', receivedSpaces);
             } catch (error) {
                 console.log(error);
             };
@@ -86,9 +71,9 @@ const Spaces = () => {
             setSpaceObjects(res);
         });
 
-        socket.on("CREATE_SPACE_RESPONSE", async({ res }: { res: string }) => {
-            if(res === '') return;
-            const updatedSpaces = await updateSpaces(res);
+        socket.on("CREATE_SPACE_RESPONSE", async({ spaceIds }: { spaceIds: string[] }) => {
+            const string = JSON.stringify(spaceIds);
+            const updatedSpaces = await encryptStr(string, algorithm, key);
             socket.emit('add_space', updatedSpaces);
         });
 

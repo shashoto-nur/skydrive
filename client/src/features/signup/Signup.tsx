@@ -8,11 +8,14 @@ import { selectApp } from '../../AppReducer';
 const Signup = () => {
     const socket = useAppSelector(selectApp) as Socket;
     useEffect(() => {
-        if(socket) {
-            socket.on("SIGNUP_RESPONSE", ({ res }) => {
-                console.log("SignUp response: ", { res });
-            });
-        }
+        if(!socket) return;
+        socket.on("SIGNUP_RESPONSE", ({ res }) => {
+            console.log("SignUp response: ", { res });
+        });
+
+        return () => {
+            socket.off("SIGNUP_RESPONSE");
+        };
     }, [socket]);
 
     const [email, setEmail] = useState('Enter your email');

@@ -1,23 +1,24 @@
 import { createSpace, getSpaces } from '../controllers/spaces/';
+import { ISpace } from '../models/Space';
 
 const setSpacesEvents = (socket: any) => {
-    socket.on('create_space', async ({ space }: { space: string }) => {
+    socket.on('create_space', async ({ space }: { space: string }, callback: (arg0: { spaceIds?: any; res?: string; }) => void) => {
         if(socket.handshake.auth.userId) {
             const newSpaceIds = await createSpace(space);
 
             socket.handshake.auth.spaceIds = [...socket.handshake.auth.spaceIds, newSpaceIds].filter(el => el !== '');
-            socket.emit('CREATE_SPACE_RESPONSE', { spaceIds: socket.handshake.auth.spaceIds });
+            callback({ spaceIds: socket.handshake.auth.spaceIds });
         } else 
-            socket.emit('CREATE_SPACE_RESPONSE', { res: 'Unauthorized' });
+        callback({ res: 'Unauthorized' });
     });
 
-    socket.on('get_spaces', async (ids: string[]) => {
+    socket.on('get_spaces', async (ids: string[], callback: (arg0: { res: string | ISpace[]; }) => void) => {
         if(socket.handshake.auth.userId) {
             socket.handshake.auth.spaceIds = ids;
             const res = await getSpaces(ids);
-            socket.emit('GET_SPACE_RESPONSE', { res } );
+            callback({ res } );
         } else
-            socket.emit('GET_SPACE_RESPONSE', { res: 'Unauthorized' });
+        callback({ res: 'Unauthorized' });
     });
 };
 

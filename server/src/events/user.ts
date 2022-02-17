@@ -1,54 +1,39 @@
 import {
     createUser,
     loginUser,
-    oauthLoginUser,
     updatePassword,
     getEncSpaces,
-    addGlobalPin,
     addSpaceIds
 } from '../controllers/users/';
 
 const setUserEvents = (socket: any) => {
-    socket.on('signup', async ({ email }: { email: string }) => {
+    socket.on('signup', async ({ email } : { email: string }, callback: (arg0: { res: string; }) => void) => {
         const res = await createUser(email);
-        socket.emit('SIGNUP_RESPONSE', { res });
+        callback({ res });
     });
 
-    socket.on('login', async ({ email, password }: { email: string, password: string }) => {
+    socket.on('login', async ({ email, password }: { email: string, password: string }, callback: (arg0: { res: { msg: string; token: string; err: string; }; }) => void) => {
         const { msg, token , err, id } = await loginUser({ email, password });
         socket.handshake.auth.userId = id;
         const res = { msg, token , err };
-        socket.emit('LOGIN_RESPONSE', { res } );
+        callback({ res });
     });
 
-    socket.on('oauth_login', async ({ oauthToken }: { oauthToken: string }) => {
-        const { msg, token , err, id } = await oauthLoginUser({ oauthToken });
-        socket.handshake.auth.userId = id;
-        const res = { msg, token , err };
-        socket.emit('LOGIN_RESPONSE', { res } );
-    });
-
-    socket.on('update_password', async ({ password }: { password: string }) => {
+    socket.on('update_password', async ({ password }: { password: string }, callback: (arg0: { res: { msg: string; token: string; err: string; }; }) => void) => {
         const id: string = socket.handshake.auth.userId;
         const res = await updatePassword({ id, password });
-        socket.emit('UPDATE_PASSWORD_RESPONSE', { res } );
+        callback({ res });
     });
 
-    socket.on('get_enc_spaces', async () => {
+    socket.on('get_enc_spaces', async (callback: (arg0: { res: string; }) => void) => {
         const res = await getEncSpaces(socket.handshake.auth.userId);
-        socket.emit('GET_ENC_SPACES_RESPONSE', { res } );
+        callback({ res });
     });
 
-    socket.on('add_space', async (id: string) => {
+    socket.on('add_space', async (id: string, callback: (arg0: { res: string; }) => void) => {
         const userId: string = socket.handshake.auth.userId;
         const res = await addSpaceIds(id, userId);
-        socket.emit('ADD_SPACE_RESPONSE', { res } );
-    });
-
-    socket.on('add_pin', async ({pin}:{pin: string}) => {
-        const userId: string = socket.handshake.auth.userId;
-        const res = await addGlobalPin(pin, userId);
-        socket.emit('ADD_PIN_RESPONSE', { res } );
+        callback({ res });
     });
 };
 

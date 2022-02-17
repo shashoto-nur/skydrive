@@ -16,7 +16,7 @@ function initiateSocket(server: any) {
         setSpacesEvents(socket);
 
         console.log('Socket connected:', socket.id);
-        socket.send({ res: 'Connected to server...'});
+        socket.send({ id: socket.handshake.auth.userId });
     });
 
     console.log(' Websocket server online...');

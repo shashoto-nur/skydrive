@@ -56,6 +56,9 @@
 
 ## Completion
 
+    Seperate sockets
+    Remove oAuth
+    Exception & error management
     Profile modification (avatar, password reset, delete user)
     Installable web app
     Tutorials & Docs

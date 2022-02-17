@@ -17,11 +17,11 @@ export const appSlice = createSlice({
     setGlobalSocketID: (state, action: PayloadAction<Socket>) => {
       const socket = action.payload;
       state.socket = socket;
-    },
+    }
   },
 });
 
 export const { setGlobalSocketID } = appSlice.actions;
-export const selectApp = (state: RootState) => state.app.socket;
+export const selectSocket = (state: RootState) => state.app.socket;
 
 export default appSlice.reducer;

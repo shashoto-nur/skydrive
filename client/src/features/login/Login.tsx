@@ -1,31 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
-import { GoogleLogin } from 'react-google-login';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import styles from './Login.module.css';
-import { selectApp } from '../../AppReducer';
+import { selectSocket } from '../../AppSlice';
+
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
-import { setGlobalAlgorithm, setGlobalKey, setGlobalPassword } from './loginSlice';
+import { encryptStr } from '../../utils/cryptoString';
+
+import { setGlobalAlgorithm, setGlobalKey } from './loginSlice';
+import styles from './Login.module.css';
 
 const Login = () => {
-    const socket = useAppSelector(selectApp) as Socket;
+    const socket = useAppSelector(selectSocket) as Socket;
     const dispatch = useAppDispatch();
-    useEffect(() => {
-        if(!socket) return;
-        socket.on("LOGIN_RESPONSE", ({ res }) => {
-            console.log("Login response: ", { res });
-            const token = res.token;
-            localStorage.setItem('token', token);
-        });
-
-        return () => {
-            socket.off("LOGIN_RESPONSE");
-        };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [socket]);
 
     const [email, setEmail] = useState('Enter your email');
     const [password, setPassword] = useState('Enter your password');
@@ -44,41 +32,30 @@ const Login = () => {
     const loginUser = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (email !== 'Enter your email' && password !== 'Enter your password') {
-            socket.emit('login', { email, password });
-            dispatch(setGlobalPassword(password));
+            socket.emit('login', { email, password }, ({ res } : { res: {token: string} }) => {
+                console.log("Login response: ", { res });
+                const token = res.token;
+                localStorage.setItem('token', token);
+            });
 
-            const key = await deriveKey(password);
-            const algorithm = getAlgorithm(password);
+            socket.emit('get_user_id', async({ id }: { id: string }) => {
+                const tempKey = await deriveKey(id) as CryptoKey;
+                const tempAlgorithm = getAlgorithm(id) as { name: string; iv: Uint8Array; };
 
-            if(!key || !algorithm) return;
-            dispatch(setGlobalKey(key));
-            dispatch(setGlobalAlgorithm(algorithm));
+                const encPassword = await encryptStr(password, tempAlgorithm, tempKey);
+                localStorage.setItem('encPassword', encPassword);
+
+                const algorithm = getAlgorithm(password) as { name: string; iv: Uint8Array; };
+                const key = await deriveKey(password) as CryptoKey;
+
+                dispatch(setGlobalKey(key));
+                dispatch(setGlobalAlgorithm(algorithm));
+            });
         } else alert('Enter your email and password!');
-    };
-
-    const oAuthFailure = (error: any) => {
-        console.log('oAuthFailure: ', error);
-    };
-
-    const oAuthSuccess = (data: any) => {
-        socket.emit('oauth_login', { oauthToken: data.tokenId });
     };
 
     return (
         <>
-            <GoogleLogin
-                clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
-                render={renderProps => (
-                    <button
-                        onClick={renderProps.onClick}
-                        className={styles.button}
-                        disabled={renderProps.disabled}
-                    > Google Login </button>
-                )}
-                onSuccess={oAuthSuccess}
-                onFailure={oAuthFailure}
-                cookiePolicy={'single_host_origin'}
-            /> <br/>
             <form onSubmit={ loginUser }>
                 <input type="text" name="email" className={styles.textbox}
                     onChange={ onMailChange } placeholder={ email } />

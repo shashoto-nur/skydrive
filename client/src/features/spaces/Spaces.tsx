@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from "socket.io-client";
 
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useAppSelector } from '../../app/hooks';
 import styles from './Spaces.module.css';
-import { selectApp } from '../../AppReducer';
+import { selectSocket } from '../../AppSlice';
 
-import { selectAlgorithm, selectKey, setGlobalAlgorithm, setGlobalKey } from '../login/loginSlice';
+import { selectAlgorithm, selectKey } from '../login/loginSlice';
 import { ISpace } from "./spacesSlice";
 
-import deriveKey from '../../utils/deriveKey';
-import getAlgorithm from '../../utils/getAlgorithm';
 import { encryptStr, decryptStr } from '../../utils/cryptoString';
 
 const Spaces = () => {
-    const socket = useAppSelector(selectApp) as Socket;
-    const dispatch = useAppDispatch();
+    const socket = useAppSelector(selectSocket) as Socket;
 
-    let key = useAppSelector(selectKey) as CryptoKey;
-    let algorithm = useAppSelector(selectAlgorithm) as { name: string; iv: Uint8Array; };
+    const key = useAppSelector(selectKey) as CryptoKey;
+    const algorithm = useAppSelector(selectAlgorithm) as { name: string; iv: Uint8Array; };
 
     const [space, setSpace] = useState('New space');
     const [spaceObjects, setSpaceObjects] = useState<ISpace[] | ''>('');
@@ -29,66 +26,33 @@ const Spaces = () => {
     };
 
     const createSpace = () => {
-        if (space !== 'New space') socket.emit('create_space', { space });
+        if (space !== 'New space') socket.emit('create_space', { space }, async({ spaceIds }: { spaceIds: string[] }) => {
+            const string = JSON.stringify(spaceIds);
+            const updatedSpaces = await encryptStr(string, algorithm, key);
+            socket.emit('add_space', updatedSpaces, ({ res }: { res: string }) => {
+                console.log(res);
+            });
+        });
         else alert('Enter a name for your space!');
     };
 
     useEffect(() => {
         if(!socket) return;
-        (async() => {
-            if(key && algorithm) return;
-            const pin = prompt("Please enter your pin");
-            if(!pin) return;
-            const tempKey = await deriveKey(pin) as CryptoKey;
-            const tempAlgorithm = getAlgorithm(pin) as { name: string; iv: Uint8Array; };
 
-            const encPassword = localStorage.getItem('pin');
-            if(!encPassword) return;
-            const password = await decryptStr(encPassword, tempAlgorithm, tempKey);
-    
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            algorithm = getAlgorithm(password) as { name: string; iv: Uint8Array; };
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            key = await deriveKey(password) as CryptoKey;
-            dispatch(setGlobalKey(key));
-            dispatch(setGlobalAlgorithm(algorithm));
-        })();
-
-        socket.on("GET_ENC_SPACES_RESPONSE", async ({ res }: { res: string }) => {
+        socket.emit('get_enc_spaces', async ({ res }: { res: string }) => {
             try {
                 if(!res) return;
 
                 const decString = await decryptStr(res, algorithm, key);
                 const receivedSpaces: string[] = JSON.parse(decString);
 
-                socket.emit('get_spaces', receivedSpaces);
+                socket.emit('get_spaces', receivedSpaces, ({ res }: { res: ISpace[] }) => {
+                    setSpaceObjects(res);
+                });
             } catch (error) {
                 console.log(error);
             };
         });
-
-        socket.on("GET_SPACE_RESPONSE", ({ res }) => {
-            setSpaceObjects(res);
-        });
-
-        socket.on("CREATE_SPACE_RESPONSE", async({ spaceIds }: { spaceIds: string[] }) => {
-            const string = JSON.stringify(spaceIds);
-            const updatedSpaces = await encryptStr(string, algorithm, key);
-            socket.emit('add_space', updatedSpaces);
-        });
-
-        socket.on("ADD_SPACE_RESPONSE", ({ res }) => {
-            console.log(res);
-        });
-
-        socket.emit('get_enc_spaces');
-
-        return () => {
-            socket.off('GET_ENC_SPACES_RESPONSE');
-            socket.off('GET_SPACE_RESPONSE');
-            socket.off('CREATE_SPACE_RESPONSE');
-            socket.off('ADD_SPACE_RESPONSE');
-        };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);

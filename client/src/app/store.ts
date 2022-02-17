@@ -1,5 +1,5 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import AppReducer from '../AppReducer';
+import AppReducer from '../AppSlice';
 import counterReducer from '../features/counter/counterSlice';
 import loginReducer from '../features/login/loginSlice';
 import spacesReducer from '../features/spaces/spacesSlice';

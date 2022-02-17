@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
 import styles from './Profile.module.css';
-import { selectApp } from '../../AppReducer';
+import { selectSocket } from '../../AppSlice';
 
 const Profile = () => {
-    const socket = useAppSelector(selectApp) as Socket;
-
-    useEffect(() => {
-        if(!socket) return; 
-        socket.on("UPDATE_PASSWORD_RESPONSE", ({ res }) => {
-            console.log("Password update response: ", { res });
-        });
-
-        return () => {
-            socket.off("UPDATE_PASSWORD_RESPONSE");
-        };
-        
-    }, [socket]);
+    const socket = useAppSelector(selectSocket) as Socket;
 
     const [password, setPassword] = useState('New password');
     const onPasswordChange = (
@@ -29,7 +17,9 @@ const Profile = () => {
 
     const updatePassword = () => {
         if (password !== 'New password')
-            socket.emit('update_password', { password });
+            socket.emit('update_password', { password }, ({ res }: { res:string }) => {
+                console.log("Password update response: ", { res });
+            });
         else alert('Please enter an email!');
     };
 

@@ -1,22 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
 import styles from './Signup.module.css';
-import { selectApp } from '../../AppReducer';
+import { selectSocket } from '../../AppSlice';
 
 const Signup = () => {
-    const socket = useAppSelector(selectApp) as Socket;
-    useEffect(() => {
-        if(!socket) return;
-        socket.on("SIGNUP_RESPONSE", ({ res }) => {
-            console.log("SignUp response: ", { res });
-        });
-
-        return () => {
-            socket.off("SIGNUP_RESPONSE");
-        };
-    }, [socket]);
+    const socket = useAppSelector(selectSocket) as Socket;
 
     const [email, setEmail] = useState('Enter your email');
     const onMailChange = (
@@ -26,7 +16,10 @@ const Signup = () => {
     };
 
     const sendEmail = () => {
-        if (email !== 'Enter your email') socket.emit('signup', { email });
+        if (email !== 'Enter your email')
+            socket.emit('signup', { email }, ({ res }: { res:string }) => {
+                console.log("Password update response: ", { res });
+            });
         else alert('Please enter an email!');
     };
 

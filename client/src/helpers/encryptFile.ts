@@ -23,11 +23,11 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
     };
 
     const uploadChunk = async (encryptedChunk: Uint8Array) => {
-        await axios.post(``, encryptedChunk, {
+        await axios.post('http://127.0.0.1:5000/server', encryptedChunk, {
             headers: { 'Content-Type': 'application/octet-stream' }
         });
     };
-    
+
     const encryptChunkNUpload = async(
         key: CryptoKey, algorithm: { name: string; iv: Uint8Array; },
         file: File, start: number, end: number

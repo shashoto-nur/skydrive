@@ -32,25 +32,25 @@ const Login = () => {
     const loginUser = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (email !== 'Enter your email' && password !== 'Enter your password') {
-            socket.emit('login', { email, password }, ({ res } : { res: {token: string} }) => {
+            socket.emit('login', { email, password }, ({ res } : { res: {token: string, userId: string} }) => {
                 console.log("Login response: ", { res });
-                const token = res.token;
+                const { token, userId } = res;
                 localStorage.setItem('token', token);
+                (async () => {
+                    const tempKey = await deriveKey(userId) as CryptoKey;
+                    const tempAlgorithm = getAlgorithm(userId) as { name: string; iv: Uint8Array; };
+        
+                    const encPassword = await encryptStr(password, tempAlgorithm, tempKey);
+                    localStorage.setItem('encPassword', encPassword);
+        
+                    const algorithm = getAlgorithm(password) as { name: string; iv: Uint8Array; };
+                    const key = await deriveKey(password) as CryptoKey;
+        
+                    dispatch(setGlobalKey(key));
+                    dispatch(setGlobalAlgorithm(algorithm));
+                })()
             });
 
-            socket.emit('get_user_id', async({ id }: { id: string }) => {
-                const tempKey = await deriveKey(id) as CryptoKey;
-                const tempAlgorithm = getAlgorithm(id) as { name: string; iv: Uint8Array; };
-
-                const encPassword = await encryptStr(password, tempAlgorithm, tempKey);
-                localStorage.setItem('encPassword', encPassword);
-
-                const algorithm = getAlgorithm(password) as { name: string; iv: Uint8Array; };
-                const key = await deriveKey(password) as CryptoKey;
-
-                dispatch(setGlobalKey(key));
-                dispatch(setGlobalAlgorithm(algorithm));
-            });
         } else alert('Enter your email and password!');
     };
 

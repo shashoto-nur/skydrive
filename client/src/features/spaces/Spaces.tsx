@@ -57,7 +57,6 @@ const Spaces = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
     
-
     return (
         <>
             <div className={styles.spaces}>

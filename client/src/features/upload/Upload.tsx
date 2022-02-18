@@ -6,7 +6,7 @@ import { useAppSelector } from '../../app/hooks';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
 
 
-const Files = () => {
+const Upload = () => {
     const key = useAppSelector(selectKey);
     const algorithm = useAppSelector(selectAlgorithm) as { name: string; iv: Uint8Array; };
 
@@ -58,5 +58,4 @@ const Files = () => {
 
 };
 
-
-export default Files;
+export default Upload;

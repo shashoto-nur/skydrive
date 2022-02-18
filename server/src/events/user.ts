@@ -15,7 +15,7 @@ const setUserEvents = (socket: any) => {
     socket.on('login', async ({ email, password }: { email: string, password: string }, callback: (arg0: { res: { msg: string; token: string; err: string; }; }) => void) => {
         const { msg, token , err, id } = await loginUser({ email, password });
         socket.handshake.auth.userId = id;
-        const res = { msg, token , err };
+        const res = { msg, token , err, userId: id };
         callback({ res });
     });
 

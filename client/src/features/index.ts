@@ -3,6 +3,6 @@ import SignUp from './signup/Signup';
 import Login from './login/Login';
 import Profile from './profile/Profile';
 import Spaces from './spaces/Spaces';
-import Pin from './pin/Pin';
+import Upload from './upload/Upload';
 
-export { Counter, SignUp, Login, Profile, Spaces, Pin };
+export { Counter, SignUp, Login, Profile, Spaces, Upload };

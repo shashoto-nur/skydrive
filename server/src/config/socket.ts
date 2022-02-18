@@ -15,7 +15,6 @@ function initiateSocket(server: any) {
         setUserEvents(socket);
         setSpacesEvents(socket);
 
-        console.log('Socket connected:', socket.id);
         socket.send({ id: socket.handshake.auth.userId });
     });
 

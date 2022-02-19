@@ -9,6 +9,8 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
     name: string;
     iv: Uint8Array;
 } }) => {
+    let chunkNumber = 0;
+
     const encryptData = async (
         unencryptedData: Uint8Array, key: CryptoKey,
         algorithm: { name: string; iv: Uint8Array; }
@@ -23,9 +25,21 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
     };
 
     const uploadChunk = async (encryptedChunk: Uint8Array) => {
-        await axios.post('http://127.0.0.1:5000/server', encryptedChunk, {
-            headers: { 'Content-Type': 'application/octet-stream' }
-        });
+        const formData = new FormData();
+        const encryptedBlob = new Blob([encryptedChunk.buffer]);
+        formData.append('enc_blob', encryptedBlob);
+        formData.append('chunk_number', chunkNumber.toString());
+        // const reconstructedChunk = new Uint8Array(await encryptedBlob.arrayBuffer())
+
+        const API_URL = 'http://127.0.0.1:5000/server';
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        };
+
+        chunkNumber += 1;
+        await axios.post(API_URL, formData, config);
     };
 
     const encryptChunkNUpload = async(

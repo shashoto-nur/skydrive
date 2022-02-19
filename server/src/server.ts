@@ -3,12 +3,12 @@ require('dotenv').config();
 import http from 'http';
 import { AddressInfo } from 'net';
 
+import initiateTransport from './config/mail';
+import initiateBot from './config/bot';
 import initApp from './config/app';
 import initiateSocket from './config/socket';
 import connectToDatabase from './config/db';
 import startCron from './config/cron';
-import initiateTransport from './config/mail';
-import initiateBot from './config/bot';
 
 console.clear();
 console.log('\x1b[36m%s\x1b[0m', 'Starting server...')

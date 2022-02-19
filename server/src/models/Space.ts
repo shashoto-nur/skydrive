@@ -5,14 +5,15 @@ export interface ISpace {
     name: string;
     preferences: string[];
     bookmarks: string[];
+    entities: string[];
 };
 
-interface UserModel extends Model<ISpace> {
+interface SpaceModel extends Model<ISpace> {
     createSpace: (name: string) => ISpace;
     getSpaces: (ids: string[]) => ISpace[];
 };
 
-const spaceSchema = new Schema<ISpace, UserModel>({
+const spaceSchema = new Schema<ISpace, SpaceModel>({
     name: {
         type: String,
         required: [true, 'Please enter a name']
@@ -22,6 +23,16 @@ const spaceSchema = new Schema<ISpace, UserModel>({
     },
     bookmarks: {
         type: [String]
+    },
+    entities: {
+        files: [{
+            type: Types.ObjectId,
+            ref: 'File'
+        }],
+        folders: [{
+            type: Types.ObjectId,
+            ref: 'Folder'
+        }]
     }
 });
 
@@ -39,5 +50,5 @@ spaceSchema.static('getSpaces', async function(ids) {
     return spaces;
 });
 
-const Space = model<ISpace, UserModel>('space', spaceSchema);
+const Space = model<ISpace, SpaceModel>('space', spaceSchema);
 export default Space;

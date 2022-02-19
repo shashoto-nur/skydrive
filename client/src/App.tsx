@@ -68,9 +68,11 @@ const App = () => {
             <header className="App-header">
                 <Link className="Link" to="/">SignUp</Link>
                 <Link id='login' className="Link" to="login">Login</Link>
-                <Link className="Link" to="profile">Profile</Link>
-                <Link className="Link" to="spaces">Spaces</Link>
-                <Link className="Link" to="upload">Upload</Link>
+                { isReady ? (<>
+                    <Link className="Link" to="profile">Profile</Link>
+                    <Link className="Link" to="spaces">Spaces</Link>
+                    <Link className="Link" to="upload">Upload</Link>
+                </>) : null }
                 <br />
 
                 <button className="button"
@@ -80,15 +82,20 @@ const App = () => {
 
                 <img src={logo} className="App-logo" alt="logo" />
                 <Counter /> <br />
-                { isReady ? (
-                    <Routes>
-                        <Route path="/" element={ <SignUp /> } />
-                        <Route path="login" element={ <Login /> } />
-                        <Route path="profile" element={ <Profile /> } />
-                        <Route path="spaces" element={ <Spaces /> } />
-                        <Route path="upload" element={ <Upload /> } />
-                    </Routes>
-                ) : ( <h1>Loading...</h1> )}
+                    { isReady ? (
+                        <Routes>
+                            <Route path="/" element={ <SignUp /> } />
+                            <Route path="login" element={ <Login /> } />
+                            <Route path="profile" element={ <Profile /> } />
+                            <Route path="spaces" element={ <Spaces /> } />
+                            <Route path="upload" element={ <Upload /> } />
+                        </Routes>
+                    ) : ( 
+                        <Routes>
+                            <Route path="/" element={ <SignUp /> } />
+                            <Route path="login" element={ <Login /> } />
+                        </Routes>
+                    )}
             </header>
         </div>
     );

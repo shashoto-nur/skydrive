@@ -41,7 +41,7 @@ const Upload = () => {
             const fileKey = await deriveKey(encId) as CryptoKey;
             const fileAlgo = getAlgorithm(encId) as { name: string; iv: Uint8Array; };
 
-            encryptFile({ file, filename, key: fileKey, algorithm: fileAlgo });
+            encryptFile({ file, filename, key: fileKey, algorithm: fileAlgo, id });
         });
     };
 

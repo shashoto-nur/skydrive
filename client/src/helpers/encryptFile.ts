@@ -5,10 +5,10 @@ import shouldRepeat from '../utils/shouldRepeat';
 
 import variables from '../env/variables';
 
-const encryptFile = async ({ file, filename, key, algorithm }: { file: File, filename: string, key: CryptoKey, algorithm: {
+const encryptFile = async ({ file, filename, key, algorithm, id }: { file: File, filename: string, key: CryptoKey, algorithm: {
     name: string;
     iv: Uint8Array;
-} }) => {
+}, id: string }) => {
     let chunkNumber = 0;
 
     const encryptData = async (
@@ -28,8 +28,8 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
         const formData = new FormData();
         const encryptedBlob = new Blob([encryptedChunk.buffer]);
         formData.append('enc_blob', encryptedBlob);
+        formData.append('id', id);
         formData.append('chunk_number', chunkNumber.toString());
-        // const reconstructedChunk = new Uint8Array(await encryptedBlob.arrayBuffer())
 
         const API_URL = 'http://127.0.0.1:5000/server';
         const config = {
@@ -39,7 +39,7 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
         };
 
         chunkNumber += 1;
-        await axios.post(API_URL, formData, config);
+        axios.post(API_URL, formData, config);
     };
 
     const encryptChunkNUpload = async(
@@ -57,7 +57,6 @@ const encryptFile = async ({ file, filename, key, algorithm }: { file: File, fil
                 const [repeat, newStart, newEnd] = shouldRepeat(fileSize, end);
     
                 if(repeat) encryptChunkNUpload(key, algorithm, file, newStart as number, newEnd as number);
-                else { /* notify server file upload has ended */ }
             };
 
         } catch ({ message }) { console.log(message as string); };

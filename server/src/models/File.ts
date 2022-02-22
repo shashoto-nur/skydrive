@@ -4,8 +4,12 @@ export interface IFile {
     id : Types.ObjectId;
     name: string;
     createdAt: Date;
+    space: Types.ObjectId;
     location: string;
-    chunks: string[];
+    chunks: [{
+        number: number;
+        id: string;
+    }];
     size: number;
 };
 
@@ -16,23 +20,30 @@ interface FileModel extends Model<IFile> {
 const fileSchema = new Schema<IFile, FileModel>({
     name: {
         type: String,
-        required: [true, 'Please enter a name']
+        required: [true, "Please enter a name"],
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+    },
+    space: {
+        type: Types.ObjectId,
+        ref: "space",
     },
     location: {
         type: String,
-        required: [true, 'Please enter a location']
+        required: [true, "Please enter a location"],
     },
     chunks: {
-        type: [String]
+        type: [{
+            id: String,
+            number: Number,
+        }],
     },
-    size : {
+    size: {
         type: Number,
-        required: [true, 'Please enter a size']
-    }
+        required: [true, "Please enter a size"],
+    },
 });
 
 const File = model<IFile, FileModel>('file', fileSchema);

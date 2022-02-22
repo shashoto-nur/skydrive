@@ -15,8 +15,7 @@ import deriveKey from './utils/deriveKey';
 import getAlgorithm from './utils/getAlgorithm';
 
 const App = () => {
-    console.log(process.env.REACT_APP_SOCKET_URL);
-    const socket = io('http://127.0.0.1:5000/', {
+    const socket = io(process.env.REACT_APP_SOCKET_URL!, {
         transports: ["websocket", "polling"],
         auth: { token: localStorage.getItem('token') }
     });

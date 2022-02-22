@@ -7,7 +7,7 @@ const setSpacesEvents = (socket: any) => {
         if(socket.handshake.auth.userId) {
             const newSpaceIds = await createSpace(space);
 
-            socket.handshake.auth.spaceIds = [...socket.handshake.auth.spaceIds, newSpaceIds].filter(el => el !== '');
+            socket.handshake.auth.spaceIds = (socket.handshake.auth.spaceIds) ? [...socket.handshake.auth.spaceIds, newSpaceIds].filter(el => el !== '') : [newSpaceIds];
             callback({ spaceIds: socket.handshake.auth.spaceIds });
         } else 
         callback({ res: 'Unauthorized' });

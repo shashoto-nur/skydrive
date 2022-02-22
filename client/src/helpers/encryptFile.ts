@@ -31,7 +31,6 @@ const encryptFile = async ({ file, filename, key, algorithm, id }: { file: File,
         formData.append('id', id);
         formData.append('chunk_number', chunkNumber.toString());
 
-        const API_URL = 'http://127.0.0.1:5000/server';
         const config = {
             headers: {
                 'content-type': 'multipart/form-data'
@@ -39,7 +38,7 @@ const encryptFile = async ({ file, filename, key, algorithm, id }: { file: File,
         };
 
         chunkNumber += 1;
-        axios.post(API_URL, formData, config);
+        axios.post(process.env.REACT_APP_UPLOAD_URL!, formData, config);
     };
 
     const encryptChunkNUpload = async(

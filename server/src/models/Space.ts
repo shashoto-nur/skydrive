@@ -5,7 +5,10 @@ export interface ISpace {
     name: string;
     preferences: string[];
     bookmarks: string[];
-    entities: string[];
+    entities: {
+        files: string[];
+        folders: string[];
+    };
 };
 
 interface SpaceModel extends Model<ISpace> {
@@ -27,11 +30,11 @@ const spaceSchema = new Schema<ISpace, SpaceModel>({
     entities: {
         files: [{
             type: Types.ObjectId,
-            ref: 'File'
+            ref: 'file'
         }],
         folders: [{
             type: Types.ObjectId,
-            ref: 'Folder'
+            ref: 'folder'
         }]
     }
 });

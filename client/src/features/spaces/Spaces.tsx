@@ -9,6 +9,7 @@ import { selectAlgorithm, selectKey } from '../login/loginSlice';
 import { ISpace } from "./spacesSlice";
 
 import { encryptStr, decryptStr } from '../../utils/cryptoString';
+import { Link } from 'react-router-dom';
 
 const Spaces = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -65,7 +66,9 @@ const Spaces = () => {
                     { (spaceObjects) ?
                         spaceObjects.map((spaceObj, index) =>
                             <div key={index} className={styles.space}>
-                                <h2>{spaceObj.name}</h2>
+                                <Link to={'../space/' + spaceObj.name} >
+                                    <h2>{spaceObj.name}</h2>
+                                </Link>
                             </div>
                         ) : <h2>No spaces</h2>
                     }

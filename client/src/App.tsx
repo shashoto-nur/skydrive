@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { Routes, Route, Link } from "react-router-dom";
 
 import logo from './logo.svg';
-import { Counter, SignUp, Profile, Login, Spaces, Upload } from './features';
+import { Counter, SignUp, Profile, Login, Spaces, Upload, Space } from './features';
 import { setGlobalKey, setGlobalAlgorithm } from './features/login/loginSlice';
 
 import './App.css';
@@ -63,40 +63,50 @@ const App = () => {
     }, [socket, dispatch]);
 
     return (
-        <div className="App">
-            <header className="App-header">
-                <Link className="Link" to="/">SignUp</Link>
-                <Link id='login' className="Link" to="login">Login</Link>
-                { isReady ? (<>
-                    <Link className="Link" to="profile">Profile</Link>
-                    <Link className="Link" to="spaces">Spaces</Link>
-                    <Link className="Link" to="upload">Upload</Link>
-                </>) : null }
-                <br />
-
-                <button className="button"
-                    onClick={ () => localStorage.clear() }>
-                    Logout
-                </button>
-
-                <img src={logo} className="App-logo" alt="logo" />
-                <Counter /> <br />
-                    { isReady ? (
-                        <Routes>
-                            <Route path="/" element={ <SignUp /> } />
-                            <Route path="login" element={ <Login /> } />
-                            <Route path="profile" element={ <Profile /> } />
-                            <Route path="spaces" element={ <Spaces /> } />
-                            <Route path="upload" element={ <Upload /> } />
-                        </Routes>
-                    ) : ( 
-                        <Routes>
-                            <Route path="/" element={ <SignUp /> } />
-                            <Route path="login" element={ <Login /> } />
-                        </Routes>
-                    )}
-            </header>
-        </div>
+      <div className="App">
+        <header className="App-header">
+          <Link className="Link" to="/">
+            SignUp
+          </Link>
+          <Link id="login" className="Link" to="login">
+            Login
+          </Link>
+          {isReady ? (
+            <>
+              <Link className="Link" to="profile">
+                Profile
+              </Link>
+              <Link className="Link" to="spaces">
+                Spaces
+              </Link>
+              <Link className="Link" to="upload">
+                Upload
+              </Link>
+            </>
+          ) : null}
+          <br />
+          <button className="button" onClick={() => localStorage.clear()}>
+            Logout
+          </button>
+          <img src={logo} className="App-logo" alt="logo" />
+          <Counter /> <br />
+          {isReady ? (
+            <Routes>
+              <Route path="/" element={<SignUp />} />
+              <Route path="login" element={<Login />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="spaces" element={<Spaces />} />
+              <Route path="upload" element={<Upload />} />
+              <Route path="space/:name" element={<Space />} />
+            </Routes>
+          ) : (
+            <Routes>
+              <Route path="/" element={<SignUp />} />
+              <Route path="login" element={<Login />} />
+            </Routes>
+          )}
+        </header>
+      </div>
     );
 }
 

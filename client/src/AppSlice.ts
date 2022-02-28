@@ -1,15 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from './app/store';
 import { Socket } from "socket.io-client";
+import { ISpace } from './features/spaces/spacesSlice';
 
 export interface AppState {
   socket: null | {};
-  userId: string
+  userId: string;
+  spaces: ISpace[];
 }
 
 const initialState: AppState = {
   socket: null,
-  userId: ''
+  userId: '',
+  spaces: []
 };
 
 export const appSlice = createSlice({
@@ -23,12 +26,17 @@ export const appSlice = createSlice({
     setGlobalUserId: (state, action: PayloadAction<string>) => {
       const userId = action.payload;
       state.userId = userId;
+    },
+    setGlobalSpaces: (state, action: PayloadAction<ISpace[]>) => {
+      const spaces = action.payload;
+      state.spaces = spaces;
     }
   },
 });
 
-export const { setGlobalSocketID, setGlobalUserId } = appSlice.actions;
+export const { setGlobalSocketID, setGlobalUserId, setGlobalSpaces } = appSlice.actions;
 export const selectSocket = (state: RootState) => state.app.socket;
 export const selectUserId = (state: RootState) => state.app.userId;
+export const selectSpaces = (state: RootState) => state.app.spaces;
 
 export default appSlice.reducer;

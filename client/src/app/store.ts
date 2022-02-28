@@ -1,6 +1,5 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import AppReducer from '../AppSlice';
-import counterReducer from '../features/counter/counterSlice';
 import loginReducer from '../features/login/loginSlice';
 import spacesReducer from '../features/spaces/spacesSlice';
 
@@ -8,7 +7,6 @@ import spacesReducer from '../features/spaces/spacesSlice';
 export const store = configureStore({
   reducer: {
     app: AppReducer,
-    counter: counterReducer,
     login: loginReducer,
     spaces: spacesReducer,
   },

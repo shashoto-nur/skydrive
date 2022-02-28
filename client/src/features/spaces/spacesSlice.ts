@@ -2,10 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 export interface ISpace {
-  _id : string;
-  name: string;
-  preferences: string[];
-  bookmarks: string[];
+    id : string;
+    name: string;
+    preferences: string[];
+    bookmarks: string[];
+    entities: {
+        files: string[];
+        folders: string[];
+    };
 };
 
 export interface SpacesState {

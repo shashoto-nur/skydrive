@@ -3,16 +3,17 @@ import { io } from "socket.io-client";
 import { Routes, Route, Link } from "react-router-dom";
 
 import logo from './logo.svg';
-import { Counter, SignUp, Profile, Login, Spaces, Upload, Space } from './features';
+import { SignUp, Profile, Login, Spaces, Upload, Space } from './features';
 import { setGlobalKey, setGlobalAlgorithm } from './features/login/loginSlice';
 
 import './App.css';
 import { useAppDispatch } from './app/hooks';
-import { setGlobalSocketID, setGlobalUserId } from './AppSlice';
+import { setGlobalSocketID, setGlobalSpaces, setGlobalUserId } from './AppSlice';
 
 import { decryptStr } from './utils/cryptoString';
 import deriveKey from './utils/deriveKey';
 import getAlgorithm from './utils/getAlgorithm';
+import { ISpace } from "./features/spaces/spacesSlice";
 
 const App = () => {
     const socket = io(process.env.REACT_APP_SOCKET_URL!, {
@@ -58,6 +59,21 @@ const App = () => {
 
             dispatch(setGlobalKey(key));
             dispatch(setGlobalAlgorithm(algorithm));
+
+            socket.emit('get_enc_spaces', async ({ res }: { res: string }) => {
+                try {
+                    if(!res) return;
+
+                    const decString = await decryptStr(res, algorithm, key);
+                    const receivedSpaces: string[] = JSON.parse(decString);
+
+                    socket.emit('get_spaces', receivedSpaces, ({ res }: { res: ISpace[] }) => {
+                        dispatch(setGlobalSpaces(res));
+                    });
+                } catch ({ message }) {
+                    console.log({ message });
+                };
+            });
             setIsReady(true);
         });
     }, [socket, dispatch]);
@@ -89,7 +105,6 @@ const App = () => {
             Logout
           </button>
           <img src={logo} className="App-logo" alt="logo" />
-          <Counter /> <br />
           {isReady ? (
             <Routes>
               <Route path="/" element={<SignUp />} />

@@ -1,6 +1,7 @@
 import { createSpace, getSpaces } from '../controllers/spaces/';
-import { createFileObject } from '../controllers/files/';
+import { createFileObject, getFiles } from '../controllers/files/';
 import { ISpace } from '../models/Space';
+import { IFile } from '../models/File';
 
 const setSpacesEvents = (socket: any) => {
     socket.on('create_space', async ({ space }: { space: string }, callback: (arg0: { spaceIds?: any; res?: string; }) => void) => {
@@ -26,6 +27,12 @@ const setSpacesEvents = (socket: any) => {
         const id: string = await createFileObject(fileData);
         callback({ id });
     });
+
+    socket.on('get_files', async(fileIds: string[], callback: (arg0: { files: IFile[]; }) => void) => {
+        const files = await getFiles(fileIds);
+        callback({ files });
+    });
+
 };
 
 export default setSpacesEvents;

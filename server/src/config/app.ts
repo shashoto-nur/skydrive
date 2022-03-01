@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 
-import { storeChunk } from '../controllers/files';
+import { downloadChunk, storeChunk } from '../controllers/files';
 
 const initApp = () => {
     const app = express();
@@ -15,6 +15,7 @@ const initApp = () => {
     app.use(cors());
 
     app.post('/server', upload.any(), storeChunk);
+    app.get('/server/download/:id', downloadChunk);
 
     console.log(' Express handling the http server...');
     return app;

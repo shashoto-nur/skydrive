@@ -1,12 +1,11 @@
 import { createWriteStream } from 'streamsaver';
-
-import getFileChunk from '../utils/getFileChunk';
-import shouldRepeat from '../utils/shouldRepeat';
-import variables from '../env/variables';
-
+import get from 'axios';
 
 const decryptFile = async ({ chunks, key, algorithm }: {
-    chunks: any;
+    chunks: [{
+        number: number;
+        id: string;
+    }];
     key: CryptoKey;
     algorithm: {
         name: string;
@@ -24,66 +23,66 @@ const decryptFile = async ({ chunks, key, algorithm }: {
     
             return decryptedUint8Data;
 
-        } catch ({ message }) { console.log(message as string); };
+        } catch ({ message }) { return message as string; };
+    };
 
+    const getFileChunkFromServer = async (chunkId: string) => {
+        const result = await get(`${process.env.REACT_APP_SERVER_URL}/download/${chunkId}`, {
+          responseType: "blob",
+        });
+        const uint8Chunk = new Uint8Array(result.data as ArrayBufferLike);
+
+        return uint8Chunk;
     };
 
     const decryptChunkNSave = async (
         writer: WritableStreamDefaultWriter<any>,
         key: CryptoKey, algorithm: { name: string; iv: Uint8Array; },
-        file: File, start: number, end: number
-    ) => {
+        chunkArray: string[], number: number
+    ): Promise<string> => {
         try {
-        
-            const encryptedChunk = await getFileChunk(file, start, end);
-        
+            const encryptedChunk = await getFileChunkFromServer(chunkArray[number]);
             const decryptedChunk = await decryptData(encryptedChunk as Uint8Array, key, algorithm);
-    
         
-            if(decryptedChunk) {
+            if(!decryptedChunk) return 'No decrypted data';
 
-                writer.write(decryptedChunk);
-    
-            
-                const fileSize = file.size + 1;
-                const [repeat, newStart, newEnd] = shouldRepeat(fileSize, end);
-                const paddedEnd = newEnd as number + variables.PADDING;
-    
-            
-                if(repeat) decryptChunkNSave(writer, key, algorithm, file, newStart as number, paddedEnd);
-                else writer.close();
-            };
+            writer.write(decryptedChunk);
+        
+            if(chunkArray.length <= number) return await decryptChunkNSave(writer, key, algorithm, chunkArray, number + 1);
 
-        } catch ({ message }) { console.log(message as string); };
+            writer.close();
+            return 'File downloaded';
 
+        } catch ({ message }) { return message as string; };
     };
 
-
     try {
-        if(key && algorithm) {
+        if(!key) return 'No key';
+        if(!algorithm) return 'No algorithm';
 
-        
-            const metaDataLen = (await getFileChunk(file, 0, 1) as Uint8Array)[0];
-            const encryptedFilename = await getFileChunk(file, 1, metaDataLen);
-            const decryptedFilenameArray = await decryptData(encryptedFilename as Uint8Array, key, algorithm);
+        let number = 0;
 
-            if(decryptedFilenameArray) {
+        let chunkArray: string[] = [];
+        chunks.forEach(({ number, id }) => (
+            chunkArray[number] = id
+        ));
 
-            
-                const filename = new TextDecoder().decode(decryptedFilenameArray);
+        const firstChunk = await getFileChunkFromServer(chunkArray[number]);
 
-            
-                const writableStream = createWriteStream(filename);
-                const writer = writableStream.getWriter();
+        const metaDataLen = firstChunk[0];
+        const encryptedFilename = firstChunk.slice(1, metaDataLen + 1);
+        const decryptedFilenameArray = await decryptData(encryptedFilename as Uint8Array, key, algorithm);
 
-            
-                const start = metaDataLen, end = metaDataLen + variables.CHUNK_SIZE + variables.PADDING;
-                decryptChunkNSave(writer, key, algorithm, file, start, end);
-            };
+        if(typeof decryptedFilenameArray === 'string') return decryptedFilenameArray;
 
-        } else console.log('Key generation failed!');
+        const filename = new TextDecoder().decode(decryptedFilenameArray);
+    
+        const writableStream = createWriteStream(filename);
+        const writer = writableStream.getWriter();
+    
+        return await decryptChunkNSave(writer, key, algorithm, chunkArray, number + 1);
 
-    } catch ({ message }) { console.log(message as string); };
+    } catch ({ message }) { return message as string; };
 
 };
 

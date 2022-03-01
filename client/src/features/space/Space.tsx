@@ -17,7 +17,6 @@ const Space = () => {
     const key = useAppSelector(selectKey) as CryptoKey;
     const algorithm = useAppSelector(selectAlgorithm) as { name: string; iv: Uint8Array; };
 
-
     const [fileIds, setFileIds] = useState([""]);
     const [files, setFiles] = useState<IFile[]>([]);
 
@@ -29,9 +28,11 @@ const Space = () => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.emit("get_files", fileIds, ({ files }: { files: IFile[] }) => {
-            setFiles(files);
-        });
+        if(fileIds.length > 0 && fileIds[0] !== '') {
+            socket.emit("get_files", fileIds, ({ files }: { files: IFile[] }) => {
+                setFiles(files);
+            });
+        };
     }, [socket, dispatch, fileIds]);
 
     return (

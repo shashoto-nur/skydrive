@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
@@ -19,7 +19,13 @@ const Spaces = () => {
 
     const [space, setSpace] = useState('New space');
     const [spaceObjects, setSpaceObjects] = useState<ISpace[] | ''>('');
-    setSpaceObjects(useAppSelector(selectSpaces));
+    const spacesSelected = useAppSelector(selectSpaces) as ISpace[];
+
+    useEffect(() => {
+      setSpaceObjects(spacesSelected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    
 
     const onSpaceChange = (
         event: React.ChangeEvent<HTMLInputElement>

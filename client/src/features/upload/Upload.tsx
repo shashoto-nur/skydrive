@@ -83,8 +83,8 @@ const Upload = () => {
                 </label>
                 <select onChange={ selectSpace }>
                     {
-                        spaceObjects.map(({ _id, name }) => (
-                            <option key={ _id } value={ _id }>{ name }</option>
+                        spaceObjects.map(({ id, name }) => (
+                            <option key={ id } value={ id }>{ name }</option>
                         ))
                     }
                 </select>

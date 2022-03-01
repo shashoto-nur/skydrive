@@ -30,8 +30,8 @@ const decryptFile = async ({ chunks, key, algorithm }: {
         const result = await get(`${process.env.REACT_APP_SERVER_URL}/download/${chunkId}`, {
           responseType: "blob",
         });
-        const uint8Chunk = new Uint8Array(result.data as ArrayBufferLike);
 
+        const uint8Chunk = new Uint8Array(await result.data.arrayBuffer());
         return uint8Chunk;
     };
 
@@ -41,7 +41,7 @@ const decryptFile = async ({ chunks, key, algorithm }: {
         chunkArray: string[], number: number
     ): Promise<string> => {
         try {
-            const encryptedChunk = await getFileChunkFromServer(chunkArray[number]);
+            const encryptedChunk = await getFileChunkFromServer(chunkArray[number]); console.log(encryptedChunk)
             const decryptedChunk = await decryptData(encryptedChunk as Uint8Array, key, algorithm);
         
             if(!decryptedChunk) return 'No decrypted data';
@@ -69,8 +69,7 @@ const decryptFile = async ({ chunks, key, algorithm }: {
 
         const firstChunk = await getFileChunkFromServer(chunkArray[number]);
 
-        const metaDataLen = firstChunk[0];
-        const encryptedFilename = firstChunk.slice(1, metaDataLen + 1);
+        const encryptedFilename = firstChunk.slice(1);
         const decryptedFilenameArray = await decryptData(encryptedFilename as Uint8Array, key, algorithm);
 
         if(typeof decryptedFilenameArray === 'string') return decryptedFilenameArray;

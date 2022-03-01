@@ -5,8 +5,8 @@ import encryptFile from '../../helpers/encryptFile';
 import { useAppSelector } from '../../app/hooks';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
 import { Socket } from 'socket.io-client';
-import { selectSocket } from '../../AppSlice';
-import { decryptStr, encryptStr } from '../../utils/cryptoString';
+import { selectSocket, selectSpaces } from '../../AppSlice';
+import { encryptStr } from '../../utils/cryptoString';
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
 import { ISpace } from '../spaces/spacesSlice';
@@ -50,23 +50,11 @@ const Upload = () => {
         setSpace(event.target.value);
     };
 
+    const spaces = useAppSelector(selectSpaces);
     useEffect(() => {
-        socket.emit('get_enc_spaces', async ({ res }: { res: string }) => {
-            try {
-                if(!res) return;
-
-                const decString = await decryptStr(res, algorithm, key);
-                const receivedSpaces: string[] = JSON.parse(decString);
-
-                socket.emit('get_spaces', receivedSpaces, ({ res }: { res: ISpace[] }) => {
-                    setSpaceObjects(res);
-                });
-            } catch (error) {
-                console.log(error);
-            };
-        });
-    }, [algorithm, key, socket]);
-    
+        if(!spaces) return;
+        setSpaceObjects(spaces);
+    }, [spaces]);
 
     return (
         <>
@@ -83,8 +71,8 @@ const Upload = () => {
                 </label>
                 <select onChange={ selectSpace }>
                     {
-                        spaceObjects.map(({ id, name }) => (
-                            <option key={ id } value={ id }>{ name }</option>
+                        spaceObjects.map(({ _id, name }) => (
+                            <option key={ _id } value={ _id }>{ name }</option>
                         ))
                     }
                 </select>

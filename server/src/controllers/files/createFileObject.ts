@@ -15,11 +15,12 @@ const createFileObject = async({ name, size, space }: IFileInit) => {
         const fileId = file._id.toString();
         const updatedSpace = await Space.findByIdAndUpdate(space, {
             $push: {
-                files: fileId
+                "entities.files": fileId,
             }
         }, { new: true });
 
         if(!updatedSpace) return "Error: Failed to update space";
+        console.log(updatedSpace);
         return fileId;
 
     } catch ({ message }) {

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 export interface ISpace {
-    id : string;
+    _id : string;
     name: string;
     preferences: string[];
     bookmarks: string[];

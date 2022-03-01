@@ -13,6 +13,7 @@ const storeChunk = async (req: any, res: any) => {
             source: chunk.buffer,
             filename: crypto.randomBytes(10).toString('hex')
         });
+
         const file = await File.findByIdAndUpdate(id, {
             $push: {
                 chunks: {

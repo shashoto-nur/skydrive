@@ -1,32 +1,35 @@
 const reader = new FileReader();
 
-// Get the binary file data
-const getFileChunk = (file: File, start: number, end: number) => {
-
+const getFileChunk = (
+    file: File,
+    start: number,
+    end: number
+): Promise<string | Uint8Array> => {
     return new Promise((resolve, _reject) => {
         try {
-            // Get a chunk from the full file
             const chunk = file.slice(start, end);
-
-            // Read the chunk
             reader.readAsArrayBuffer(chunk);
 
-            reader.onloadend = event => {
-                if(event.target && event.target.readyState === FileReader.DONE)
-                {
+            reader.onloadend = (event) => {
+                if (
+                    event.target &&
+                    event.target.readyState === FileReader.DONE
+                ) {
                     const arrayBufferChunk = event.target.result;
-                    const uint8Chunk = new Uint8Array(arrayBufferChunk as ArrayBufferLike);
+                    if (
+                        !arrayBufferChunk ||
+                        typeof arrayBufferChunk === "string"
+                    )
+                        return "No array buffer chunk";
+                    const uint8Chunk = new Uint8Array(arrayBufferChunk);
 
-                    // Return the Uint8Array of the chunk
                     resolve(uint8Chunk);
-                };
+                }
             };
-
-        } catch ({ message }) { console.log(message as string); };
-
+        } catch ({ message }) {
+            return message as string;
+        }
     });
-
 };
-
 
 export default getFileChunk;

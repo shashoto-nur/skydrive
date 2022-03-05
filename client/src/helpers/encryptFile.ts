@@ -45,6 +45,7 @@ const encryptFile = async ({
     const uploadChunk = async (encryptedChunk: Uint8Array) => {
         const formData = new FormData();
         const encryptedBlob = new Blob([encryptedChunk.buffer]);
+
         formData.append("enc_blob", encryptedBlob);
         formData.append("id", id);
         formData.append("chunk_number", chunkNumber.toString());
@@ -56,7 +57,13 @@ const encryptFile = async ({
         };
 
         chunkNumber += 1;
-        axios.post(process.env.REACT_APP_SERVER_URL!, formData, config);
+        const res = await axios.post(
+            process.env.REACT_APP_SERVER_URL!,
+            formData,
+            config
+        );
+
+        console.log(res.data.status);
     };
 
     const encryptChunkNUpload = async (

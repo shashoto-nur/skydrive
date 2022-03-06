@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
-import styles from './Profile.module.css';
-import { selectSocket } from '../../AppSlice';
+import { selectSocket } from '../../main/AppSlice';
 
 const Profile = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -26,9 +25,9 @@ const Profile = () => {
     return (
         <>
             <form onSubmit={ event => event.preventDefault() }>
-                <input type="text" name="password" className={styles.textbox}
+                <input type="text" name="password" className="textbox"
                     onChange={ onPasswordChange } placeholder={ password } />
-                <button type="submit" className={styles.button}
+                <button type="submit" className="button"
                     onClick={ updatePassword }>Update</button>
             </form>
         </>

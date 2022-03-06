@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
-import styles from './Spaces.module.css';
-import { selectSocket, selectSpaces } from '../../AppSlice';
+import { selectSocket, selectSpaces } from '../../main/AppSlice';
 
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 import { ISpace } from "./spacesSlice";
@@ -46,12 +45,12 @@ const Spaces = () => {
     
     return (
         <>
-            <div className={styles.spaces}>
-                <div className={styles.spaces_header}>
+            <div className="spaces">
+                <div className="spaces_header">
                     <h1>Spaces</h1>
                     { (spaceObjects) ?
                         spaceObjects.map((spaceObj, index) =>
-                            <div key={index} className={styles.space}>
+                            <div key={index} className="space">
                                 <Link to={'../space/' + spaceObj.name} >
                                     <h2>{spaceObj.name}</h2>
                                 </Link>
@@ -62,9 +61,9 @@ const Spaces = () => {
             </div>
 
             <form onSubmit={ event => event.preventDefault() }>
-                <input type="text" name="space" className={styles.textbox}
+                <input type="text" name="space" className="textbox"
                     onChange={ onSpaceChange } placeholder={ space } />
-                <button type="submit" className={styles.button}
+                <button type="submit" className="button"
                     onClick={ createSpace }>Create</button>
             </form>
         </>

@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { selectSocket } from '../../AppSlice';
+import { selectSocket } from '../../main/AppSlice';
 
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
 import { encryptStr } from '../../utils/cryptoString';
 
 import { setGlobalAlgorithm, setGlobalKey } from './loginSlice';
-import styles from './Login.module.css';
 
 const Login = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -57,11 +56,11 @@ const Login = () => {
     return (
         <>
             <form onSubmit={ loginUser }>
-                <input type="text" name="email" className={styles.textbox}
+                <input type="text" name="email" className="textbox"
                     onChange={ onMailChange } placeholder={ email } />
-                <input type="password" name="password" className={styles.textbox}
+                <input type="password" name="password" className="textbox"
                     onChange={ onPasswordChange } placeholder={ password } />
-                <button type="submit" className={styles.button}>Login</button>
+                <button type="submit" className="button">Login</button>
             </form>
         </>
     );

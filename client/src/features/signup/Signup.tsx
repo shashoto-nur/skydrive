@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from '../../app/hooks';
-import styles from './Signup.module.css';
-import { selectSocket } from '../../AppSlice';
+import { selectSocket } from '../../main/AppSlice';
 
 const Signup = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -26,9 +25,9 @@ const Signup = () => {
     return (
         <>
             <form onSubmit={ event => event.preventDefault() }>
-                <input type="text" name="email" className={styles.textbox}
+                <input type="text" name="email" className="textbox"
                     onChange={ onMailChange } placeholder={ email } />
-                <button type="submit" className={styles.button}
+                <button type="submit" className="button"
                     onClick={ sendEmail }>Send</button>
             </form>
         </>

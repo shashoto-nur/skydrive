@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 
-import encryptFile from '../../helpers/encryptFile';
 import { useAppSelector } from '../../app/hooks';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
-import { Socket } from 'socket.io-client';
-import { selectSocket, selectSpaces } from '../../AppSlice';
+import { selectSocket, selectSpaces } from '../../main/AppSlice';
+import { ISpace } from '../spaces/spacesSlice';
+
+import encryptFile from '../../helpers/encryptFile';
 import { encryptStr } from '../../utils/cryptoString';
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
-import { ISpace } from '../spaces/spacesSlice';
 
 
 const Upload = () => {

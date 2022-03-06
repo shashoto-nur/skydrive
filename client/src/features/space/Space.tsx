@@ -3,7 +3,7 @@ import { Socket } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
 import { useAppSelector } from "../../app/hooks";
-import { selectSocket, selectSpaces } from "../../AppSlice";
+import { selectSocket, selectSpaces } from "../../main/AppSlice";
 import { selectKey, selectAlgorithm } from "../login/loginSlice";
 import { IFile } from "./spaceSlice";
 

@@ -59,7 +59,7 @@ const Login = () => {
             <form onSubmit={ loginUser }>
                 <input type="text" name="email" className={styles.textbox}
                     onChange={ onMailChange } placeholder={ email } />
-                <input type="text" name="password" className={styles.textbox}
+                <input type="password" name="password" className={styles.textbox}
                     onChange={ onPasswordChange } placeholder={ password } />
                 <button type="submit" className={styles.button}>Login</button>
             </form>

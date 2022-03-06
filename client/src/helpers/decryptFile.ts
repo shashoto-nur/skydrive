@@ -45,8 +45,9 @@ const decryptFile = async ({
             }
         );
 
-        const blob = response.data;
-        const uint8Chunk = new Uint8Array(await blob.arrayBuffer());
+        const { data } = response;
+        const uint8Chunk = new Uint8Array(await data.arrayBuffer());
+
         return uint8Chunk;
     };
 
@@ -111,8 +112,8 @@ const decryptFile = async ({
 
         const filename = new TextDecoder().decode(decryptedFilenameArray);
 
-        const { getWriter } = createWriteStream(filename);
-        const writer = getWriter();
+        const writableStream = createWriteStream(filename);
+        const writer = writableStream.getWriter();
 
         return await decryptChunkNSave(
             writer,

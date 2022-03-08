@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Socket } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
@@ -10,42 +10,51 @@ import { IFile } from "./spaceSlice";
 import decryptFile from "../../helpers/decryptFile";
 import deriveKey from "../../utils/deriveKey";
 import getAlgorithm from "../../utils/getAlgorithm";
-import { encryptStr } from "../../utils/cryptoString";
+import getDigest from "../../utils/getDigest";
 
 const Space = () => {
     const { name } = useParams();
 
     const socket = useAppSelector(selectSocket) as Socket;
     const spaces = useAppSelector(selectSpaces);
-    const key = useAppSelector(selectKey) as CryptoKey;
-    const algorithm = useAppSelector(selectAlgorithm) as {
-        name: string;
-        iv: Uint8Array;
+    const key = useAppSelector(selectKey);
+    const algorithm = useAppSelector(selectAlgorithm);
+
+    const [files, setFiles] = useState<IFile[] | "">("");
+
+    if (!socket || !key || !algorithm) return <></>;
+
+    const space = spaces.find((s) => s.name === name);
+    if (!space) return <></>;
+
+    let fileIds: string[] = space.entities.files;
+    if (!fileIds) return <></>;
+
+    if (!files) {
+        socket.emit("get_files", fileIds, ({ files }: { files: IFile[] }) => {
+            setFiles(files);
+        });
+    }
+
+    const createLink = ({ id }: { id: string }) => {
+        return async () => {
+            const digest = await getDigest({ id, algorithm, key });
+            const source = { id, digest };
+
+            const link = btoa(JSON.stringify(source));
+            const base = window.location.origin + "/file/";
+            await navigator.clipboard.writeText(base + link);
+
+            alert("Link copied to clipboard!");
+        };
     };
-
-    const [files, setFiles] = useState<IFile[]>([]);
-
-    useEffect(() => {
-        if (!socket) return;
-
-        const space = spaces.find((s) => s.name === name);
-        if (!space) return;
-
-        let fileIds: string[] = space.entities.files;
-        if (!fileIds) return;
-
-        socket.emit("get_files", fileIds, ({ files }: { files: IFile[] }) =>
-            setFiles(files)
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const getFile = (chunks: [{ number: number; id: string }], id: string) => {
         return async () => {
-            const encId = await encryptStr(id, algorithm, key);
+            const digest = await getDigest({ id, algorithm, key });
 
-            const fileKey = await deriveKey(encId);
-            const fileAlgo = getAlgorithm(encId);
+            const fileKey = await deriveKey(digest);
+            const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert("Try again");
 
             const result = await decryptFile({
@@ -59,12 +68,15 @@ const Space = () => {
 
     return (
         <>
-            <h1>{ name }</h1>
+            <h1>{name}</h1>
             {files ? (
                 files.map((file, index) => (
-                    <div key={ index } onClick={ getFile(file.chunks, file._id) }>
-                        <h2>{ file.name }</h2>
-                        <p>{ file.size }</p>
+                    <div key={index} onClick={getFile(file.chunks, file._id)}>
+                        <h2>{file.name}</h2>
+                        <p>{file.size}</p>
+                        <button onClick={createLink({ id: file._id })}>
+                            Share
+                        </button>
                     </div>
                 ))
             ) : (

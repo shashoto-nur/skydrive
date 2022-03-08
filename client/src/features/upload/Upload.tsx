@@ -7,9 +7,9 @@ import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { ISpace } from '../spaces/spacesSlice';
 
 import encryptFile from '../../helpers/encryptFile';
-import { encryptStr } from '../../utils/cryptoString';
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
+import getDigest from '../../utils/getDigest';
 
 
 const Upload = () => {
@@ -37,9 +37,11 @@ const Upload = () => {
         if(!file || !key || !space) return alert('Please provide a file and a passkey in order to encrypt!');
 
         socket.emit('upload_file', { name: filename, size: file.size, space }, async ({ id }: { id: string }) => {
-            const encId = await encryptStr(id, algorithm, key);
-            const fileKey = await deriveKey(encId) as CryptoKey;
-            const fileAlgo = getAlgorithm(encId) as { name: string; iv: Uint8Array; };
+            const digest = await getDigest({ id, algorithm, key });
+
+            const fileKey = await deriveKey(digest);
+            const fileAlgo = getAlgorithm(digest);
+            if (!fileKey || !fileAlgo) return alert("Try again");
 
             await encryptFile({ file, filename, key: fileKey, algorithm: fileAlgo, id });
             console.log('File uploaded...');

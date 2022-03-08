@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { Routes, Route, Link } from "react-router-dom";
 
-import { SignUp, Profile, Login, Spaces, Upload, Space } from "../features";
+import { SignUp, Profile, Login, Spaces, Upload, Space, File } from "../features";
 import { setGlobalKey, setGlobalAlgorithm } from "../features/login/loginSlice";
 
 import "./App.css";
@@ -24,7 +24,7 @@ const App = () => {
         auth: { token: localStorage.getItem("token") },
     });
     const dispatch = useAppDispatch();
-    const [isReady, setIsReady] = useState(false);
+    const [reRender, setReRender] = useState(false);
 
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
@@ -91,9 +91,10 @@ const App = () => {
                     console.log({ message });
                 }
             });
-            setIsReady(true);
+            setReRender(true);
         });
-    }, [socket, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket]);
 
     return (
         <div className="App">
@@ -104,7 +105,7 @@ const App = () => {
                 <Link id="login" className="Link" to="login">
                     Login
                 </Link>
-                {isReady ? (
+                {reRender ? (
                     <>
                         <Link className="Link" to="profile">
                             Profile
@@ -121,23 +122,18 @@ const App = () => {
                 <button className="button" onClick={() => localStorage.clear()}>
                     Logout
                 </button>
-
-                {isReady ? (
-                    <Routes>
-                        <Route path="/" element={<SignUp />} />
-                        <Route path="login" element={<Login />} />
-                        <Route path="profile" element={<Profile />} />
-                        <Route path="spaces" element={<Spaces />} />
-                        <Route path="upload" element={<Upload />} />
-                        <Route path="space/:name" element={<Space />} />
-                    </Routes>
-                ) : (
-                    <Routes>
-                        <Route path="/" element={<SignUp />} />
-                        <Route path="login" element={<Login />} />
-                    </Routes>
-                )}
             </header>
+            <main>
+                <Routes>
+                    <Route path="/" element={<SignUp />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="spaces" element={<Spaces />} />
+                    <Route path="upload" element={<Upload />} />
+                    <Route path="space/:name" element={<Space />} />
+                    <Route path="file/:link" element={<File />} />
+                </Routes>
+            </main>
         </div>
     );
 };

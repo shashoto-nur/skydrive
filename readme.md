@@ -57,7 +57,7 @@
 ## Completion
 
     Seperate sockets
-    Remove oAuth
+    Change nodemailer auth mechanism
     Exception & error management
     Profile modification (avatar, password reset, delete user)
     Installable web app

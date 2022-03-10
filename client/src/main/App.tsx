@@ -96,6 +96,11 @@ const App = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
+    const logout = () => {
+        localStorage.clear();
+        window.location.reload();
+    };
+
     return (
         <div className="App">
             <header className="App-header">
@@ -119,7 +124,7 @@ const App = () => {
                     </>
                 ) : null}
                 <br />
-                <button className="button" onClick={() => localStorage.clear()}>
+                <button className="button" onClick={logout}>
                     Logout
                 </button>
             </header>

@@ -6,10 +6,7 @@ export interface IFile {
     createdAt: Date;
     space: Types.ObjectId;
     location: string;
-    chunks: [{
-        number: number;
-        id: string;
-    }];
+    chunks: [[number]];
     size: number;
 };
 
@@ -35,10 +32,7 @@ const fileSchema = new Schema<IFile, FileModel>({
         required: [true, "Please enter a location"],
     },
     chunks: {
-        type: [{
-            id: String,
-            number: Number,
-        }],
+        type: [[Number]],
     },
     size: {
         type: Number,

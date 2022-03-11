@@ -43,7 +43,7 @@ const Upload = () => {
             const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert("Try again");
 
-            await encryptFile({ file, filename, key: fileKey, algorithm: fileAlgo, id });
+            await encryptFile({ file, filename, key: fileKey, algorithm: fileAlgo, id, socket });
             console.log('File uploaded...');
         });
     };

@@ -1,5 +1,5 @@
 import { createSpace, getSpaces } from "../controllers/spaces/";
-import { createFileObject, getFile, getFiles } from "../controllers/files/";
+import { createFileObject, getFile, getFiles, downloadChunk, storeChunk } from "../controllers/files/";
 import { ISpace } from "../models/Space";
 import { IFile } from "../models/File";
 
@@ -67,6 +67,28 @@ const setSpacesEvents = (socket: any) => {
         ) => {
             const file = await getFile(fileId);
             callback({ file });
+        }
+    );
+
+    socket.on(
+        "store_chunk",
+        async (
+            { chunk, number, id }: { chunk: Uint8Array; number: number; id: string },
+            callback: (arg0: { res: string; }) => void
+        ) => {
+            const res = await storeChunk({ chunk, number, id });
+            callback({ res });
+        }
+    );
+
+    socket.on(
+        "get_chunk",
+        async (
+            fileNums: [number],
+            callback: (arg0: { chunk: Buffer; }) => void
+        ) => {
+            const chunk = await downloadChunk(fileNums);
+            callback({ chunk });
         }
     );
 };

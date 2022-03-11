@@ -4,9 +4,6 @@ export interface IFile {
     createdAt: Date;
     space: string;
     location: string;
-    chunks: [{
-        number: number;
-        id: string;
-    }];
+    chunks: [[number]];
     size: number;
 };

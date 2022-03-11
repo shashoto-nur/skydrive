@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Socket } from "socket.io-client";
 
 import { useAppSelector } from "../../app/hooks";
-import { IFile } from "./spaceSlice";
+import { IFile } from "../space/spaceSlice";
 import { selectSocket } from "../../main/AppSlice";
 
 import decryptFile from "../../helpers/decryptFile";
@@ -35,7 +35,7 @@ const File = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
-    const getFile = (chunks: [{ number: number; id: string }], id: string) => {
+    const getFile = (chunks: [[number]], id: string) => {
         return async () => {
             const fileKey = await deriveKey(digest);
             const fileAlgo = getAlgorithm(digest);

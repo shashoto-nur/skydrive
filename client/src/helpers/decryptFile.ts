@@ -1,129 +1,60 @@
 import { createWriteStream } from "streamsaver";
-import get from "axios";
+import { IDecNSave, IDecInit } from "./interfaces";
 
-const decryptFile = async ({
-    chunks,
-    key,
-    algorithm,
-}: {
-    chunks: [
-        {
-            number: number;
-            id: string;
+const downloadChunk = async (
+    { key, algorithm, writer, chunks, number, socket }: IDecNSave,
+    callback: (encData: Uint8Array, decNSave: IDecNSave) => Promise<void>
+) => {
+    const decNSave = { key, algorithm, writer, chunks, number, socket };
+    socket.emit(
+        "get_chunk",
+        chunks[number],
+        async ({ chunk }: { chunk: Buffer }) => {
+            const encData = new Uint8Array(chunk);
+            await callback(encData, decNSave);
         }
-    ];
-    key: CryptoKey;
-    algorithm: {
-        name: string;
-        iv: Uint8Array;
-    };
-}) => {
-    const decryptData = async (
-        encryptedData: Uint8Array,
-        key: CryptoKey,
-        algorithm: { name: string; iv: Uint8Array }
-    ) => {
-        try {
-            const decryptedData = await window.crypto.subtle.decrypt(
-                algorithm,
-                key,
-                encryptedData
-            );
-            const decryptedUint8Data = new Uint8Array(decryptedData);
+    );
+};
 
-            return decryptedUint8Data;
-        } catch ({ message }) {
-            return message as string;
-        }
-    };
+const decryptAndSave = async (
+    encData: Uint8Array,
+    { key, algorithm, writer, chunks, number, socket }: IDecNSave
+) => {
+    const decryptedData = await window.crypto.subtle.decrypt(
+        algorithm,
+        key,
+        encData
+    );
+    const decData = new Uint8Array(decryptedData);
 
-    const getFileChunkFromServer = async (chunkId: string) => {
-        const response = await get(
-            `${process.env.REACT_APP_SERVER_URL}/download/${chunkId}`,
-            {
-                responseType: "blob",
-            }
+    if (!decData) return console.log("No decrypted data");
+
+    writer.write(decData);
+
+    if (chunks.length <= number)
+        return await downloadChunk(
+            { key, algorithm, writer, chunks, number: number + 1, socket },
+            decryptAndSave
         );
 
-        const { data } = response;
-        const uint8Chunk = new Uint8Array(await data.arrayBuffer());
+    writer.close();
+    console.log("File downloaded");
+};
 
-        return uint8Chunk;
-    };
-
-    const decryptChunkNSave = async (
-        writer: WritableStreamDefaultWriter<any>,
-        key: CryptoKey,
-        algorithm: { name: string; iv: Uint8Array },
-        chunkArray: string[],
-        number: number
-    ): Promise<string> => {
-        try {
-            const encryptedChunk = await getFileChunkFromServer(
-                chunkArray[number]
-            );
-
-            const decryptedChunk = await decryptData(
-                encryptedChunk,
-                key,
-                algorithm
-            );
-
-            if (!decryptedChunk) return "No decrypted data";
-
-            writer.write(decryptedChunk);
-
-            if (chunkArray.length <= number)
-                return await decryptChunkNSave(
-                    writer,
-                    key,
-                    algorithm,
-                    chunkArray,
-                    number + 1
-                );
-
-            writer.close();
-            return "File downloaded";
-        } catch ({ message }) {
-            return message as string;
-        }
-    };
-
+const decryptFile = async ({ chunks, socket, name, key, algorithm }: IDecInit) => {
     try {
-        if (!key) return "No key";
-        if (!algorithm) return "No algorithm";
+        if (!key) return console.log("No key");
+        if (!algorithm) return console.log("No algorithm");
 
-        let chunkArray: string[] = [];
-        chunks.forEach(({ number, id }) => (chunkArray[number] = id));
-        let number = 0;
+        const { getWriter } = createWriteStream(name);
+        const writer = getWriter();
 
-        const encryptedFilename = await getFileChunkFromServer(
-            chunkArray[number]
-        );
-
-        const decryptedFilenameArray = await decryptData(
-            encryptedFilename,
-            key,
-            algorithm
-        );
-
-        if (typeof decryptedFilenameArray === "string")
-            return decryptedFilenameArray;
-
-        const filename = new TextDecoder().decode(decryptedFilenameArray);
-
-        const writableStream = createWriteStream(filename);
-        const writer = writableStream.getWriter();
-
-        return await decryptChunkNSave(
-            writer,
-            key,
-            algorithm,
-            chunkArray,
-            number + 1
+        await downloadChunk(
+            { key, algorithm, writer, chunks, number: 0, socket },
+            decryptAndSave
         );
     } catch ({ message }) {
-        return message as string;
+        console.log(message);
     }
 };
 

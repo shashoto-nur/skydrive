@@ -32,6 +32,7 @@ const Space = () => {
 
     if (!files) {
         socket.emit("get_files", fileIds, ({ files }: { files: IFile[] }) => {
+            console.log(files)
             setFiles(files);
         });
     }
@@ -49,7 +50,7 @@ const Space = () => {
         };
     };
 
-    const getFile = (chunks: [{ number: number; id: string }], id: string) => {
+    const getFile = (name: string, chunks: [[number]], id: string) => {
         return async () => {
             const digest = await getDigest({ id, algorithm, key });
 
@@ -59,6 +60,8 @@ const Space = () => {
 
             const result = await decryptFile({
                 chunks,
+                socket,
+                name,
                 key: fileKey,
                 algorithm: fileAlgo,
             });
@@ -71,7 +74,10 @@ const Space = () => {
             <h1>{name}</h1>
             {files ? (
                 files.map((file, index) => (
-                    <div key={index} onClick={getFile(file.chunks, file._id)}>
+                    <div
+                        key={index}
+                        onClick={getFile(file.name, file.chunks, file._id)}
+                    >
                         <h2>{file.name}</h2>
                         <p>{file.size}</p>
                         <button onClick={createLink({ id: file._id })}>

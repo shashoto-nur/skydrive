@@ -5,6 +5,7 @@ type IResponse = {
 }
 
 const downloadChunk = async (fileNums: [number]) => {
+    console.log(fileNums)
     const responses: IResponse[] = await axios.all(
         fileNums.map((fileNum: number) =>
             axios.get(process.env.FILE_LINK! + fileNum)

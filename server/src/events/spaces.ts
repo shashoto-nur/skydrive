@@ -73,7 +73,7 @@ const setSpacesEvents = (socket: any) => {
     socket.on(
         "store_chunk",
         async (
-            { chunk, number, id }: { chunk: Uint8Array; number: number; id: string },
+            { chunk, number, id }: { chunk: Buffer; number: number; id: string },
             callback: (arg0: { res: string; }) => void
         ) => {
             const res = await storeChunk({ chunk, number, id });

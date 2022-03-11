@@ -38,13 +38,11 @@ const storeChunk = async ({
 }: {
     id: string;
     number: number;
-    chunk: Uint8Array;
+    chunk: Buffer;
 }) => {
     try {
-        console.log(chunk.length / (60 * 1024 * 1024));
-
         const limit = 15 * 1024 * 1024;
-        const slices = divideBuffer(Buffer.from(chunk), limit);
+        const slices = divideBuffer(chunk, limit);
 
         const getFileNum = slices.map(async (slice, index) => {
             return { num: await sendDocument(slice), index };
@@ -77,7 +75,7 @@ const storeChunk = async ({
         );
 
         if (!file) return "File not found";
-        return "Error while sending file";
+        return "File is now accessable";
     } catch ({ message }) {
         console.log(message);
         return "Error while sending file";

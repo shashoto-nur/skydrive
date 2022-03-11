@@ -35,25 +35,28 @@ const File = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
-    const getFile = (chunks: [[number]], id: string) => {
+    const getFile = (name: string, chunks: [[number]], id: string) => {
         return async () => {
             const fileKey = await deriveKey(digest);
             const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert("Try again");
 
-            const result = await decryptFile({
+            decryptFile({
                 chunks,
+                socket,
+                name,
                 key: fileKey,
                 algorithm: fileAlgo,
             });
-            console.log(result);
         };
     };
 
     return (
         <>
             {fileObj ? (
-                <div onClick={getFile(fileObj.chunks, fileObj._id)}>
+                <div
+                    onClick={getFile(fileObj.name, fileObj.chunks, fileObj._id)}
+                >
                     <h2>{fileObj.name}</h2>
                     <p>{fileObj.size}</p>
                 </div>

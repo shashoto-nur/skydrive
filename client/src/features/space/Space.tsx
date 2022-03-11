@@ -58,14 +58,13 @@ const Space = () => {
             const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert("Try again");
 
-            const result = await decryptFile({
+            decryptFile({
                 chunks,
                 socket,
                 name,
                 key: fileKey,
                 algorithm: fileAlgo,
             });
-            console.log(result);
         };
     };
 

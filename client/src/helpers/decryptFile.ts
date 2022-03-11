@@ -1,21 +1,6 @@
 import { createWriteStream } from "streamsaver";
 import { IDecNSave, IDecInit } from "./interfaces";
 
-const downloadChunk = async (
-    { key, algorithm, writer, chunks, number, socket }: IDecNSave,
-    callback: (encData: Uint8Array, decNSave: IDecNSave) => Promise<void>
-) => {
-    const decNSave = { key, algorithm, writer, chunks, number, socket };
-    socket.emit(
-        "get_chunk",
-        chunks[number],
-        async ({ chunk }: { chunk: Buffer }) => {
-            const encData = new Uint8Array(chunk);
-            await callback(encData, decNSave);
-        }
-    );
-};
-
 const decryptAndSave = async (
     encData: Uint8Array,
     { key, algorithm, writer, chunks, number, socket }: IDecNSave
@@ -31,7 +16,7 @@ const decryptAndSave = async (
 
     writer.write(decData);
 
-    if (chunks.length <= number)
+    if (chunks.length > number)
         return await downloadChunk(
             { key, algorithm, writer, chunks, number: number + 1, socket },
             decryptAndSave
@@ -39,15 +24,32 @@ const decryptAndSave = async (
 
     writer.close();
     console.log("File downloaded");
+
+};
+
+const downloadChunk = async (
+    decNSave: IDecNSave,
+    decryptAndSave: (encData: Uint8Array, decNSave: IDecNSave) => Promise<void>
+) => {
+    const { socket, chunks, number } = decNSave;
+    socket.emit(
+        "get_chunk",
+        chunks[number],
+        async ({ chunk }: { chunk: Buffer }) => {
+            const encData = new Uint8Array(chunk);
+            await decryptAndSave(encData, decNSave);
+        }
+    );
 };
 
 const decryptFile = async ({ chunks, socket, name, key, algorithm }: IDecInit) => {
     try {
         if (!key) return console.log("No key");
         if (!algorithm) return console.log("No algorithm");
+        console.log(chunks.length)
 
-        const { getWriter } = createWriteStream(name);
-        const writer = getWriter();
+        const writeableStream = createWriteStream(name);
+        const writer = writeableStream.getWriter();
 
         await downloadChunk(
             { key, algorithm, writer, chunks, number: 0, socket },

@@ -26,7 +26,7 @@ const encryptChunkNUpload = async ({
         );
 
         const encryptedChunk = new Uint8Array(encryptedData);
-
+        console.log(encryptedChunk)
         socket.emit(
             "store_chunk",
             { chunk: encryptedChunk, number: chunkNumber, id },

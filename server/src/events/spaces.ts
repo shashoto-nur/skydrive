@@ -1,11 +1,17 @@
-import { createSpace, getSpaces } from "../controllers/spaces/";
-import { createFileObject, getFile, getFiles, downloadChunk, storeChunk } from "../controllers/files/";
-import { ISpace } from "../models/Space";
-import { IFile } from "../models/File";
+import { createSpace, getSpaces } from '../controllers/spaces/';
+import {
+    createFileObject,
+    getFile,
+    getFiles,
+    downloadChunk,
+    storeChunk,
+} from '../controllers/files/';
+import { ISpace } from '../models/Space';
+import { IFile } from '../models/File';
 
 const setSpacesEvents = (socket: any) => {
     socket.on(
-        "create_space",
+        'create_space',
         async (
             { space }: { space: string },
             callback: (arg0: { spaceIds?: any; res?: string }) => void
@@ -15,16 +21,16 @@ const setSpacesEvents = (socket: any) => {
 
                 socket.handshake.auth.spaceIds = socket.handshake.auth.spaceIds
                     ? [...socket.handshake.auth.spaceIds, newSpaceIds].filter(
-                          (el) => el !== ""
+                          (el) => el !== ''
                       )
                     : [newSpaceIds];
                 callback({ spaceIds: socket.handshake.auth.spaceIds });
-            } else callback({ res: "Unauthorized" });
+            } else callback({ res: 'Unauthorized' });
         }
     );
 
     socket.on(
-        "get_spaces",
+        'get_spaces',
         async (
             ids: string[],
             callback: (arg0: { res: string | ISpace[] }) => void
@@ -33,12 +39,12 @@ const setSpacesEvents = (socket: any) => {
                 socket.handshake.auth.spaceIds = ids;
                 const res = await getSpaces(ids);
                 callback({ res });
-            } else callback({ res: "Unauthorized" });
+            } else callback({ res: 'Unauthorized' });
         }
     );
 
     socket.on(
-        "upload_file",
+        'upload_file',
         async (
             fileData: { name: string; size: number; space: string },
             callback: (arg0: { id: any }) => void
@@ -49,7 +55,7 @@ const setSpacesEvents = (socket: any) => {
     );
 
     socket.on(
-        "get_files",
+        'get_files',
         async (
             fileIds: string[],
             callback: (arg0: { files: IFile[] }) => void
@@ -60,7 +66,7 @@ const setSpacesEvents = (socket: any) => {
     );
 
     socket.on(
-        "get_file",
+        'get_file',
         async (
             fileId: string,
             callback: (arg0: { file: IFile | string }) => void
@@ -71,21 +77,43 @@ const setSpacesEvents = (socket: any) => {
     );
 
     socket.on(
-        "store_chunk",
+        'store_chunk',
         async (
-            { chunk, number, id }: { chunk: Buffer; number: number; id: string },
-            callback: (arg0: { res: string; }) => void
+            {
+                chunk,
+                number,
+                id,
+                repeat,
+                chunkArray,
+            }: {
+                chunk: Buffer;
+                number: number;
+                id: string;
+                repeat: boolean;
+                chunkArray: [[number]];
+            },
+            callback: (arg0: any) => void
         ) => {
-            const res = await storeChunk({ chunk, number, id });
-            callback({ res });
+            const res = await storeChunk({
+                chunk,
+                number,
+                id,
+                repeat,
+                chunkArray,
+            });
+            const returnData =
+                typeof res === 'string'
+                    ? { chunk: [[0]], err: res }
+                    : { chunk: res, err: '' };
+            callback(returnData);
         }
     );
 
     socket.on(
-        "get_chunk",
+        'get_chunk',
         async (
             fileNums: [number],
-            callback: (arg0: { chunk: Buffer; }) => void
+            callback: (arg0: { chunk: Buffer | number }) => void
         ) => {
             const chunk = await downloadChunk(fileNums);
             callback({ chunk });

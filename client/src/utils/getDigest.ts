@@ -1,4 +1,4 @@
-import { encryptStr } from "./cryptoString";
+import { encryptStr } from './cryptoString';
 
 const getDigest = async ({
     id,
@@ -14,7 +14,7 @@ const getDigest = async ({
 }) => {
     const text = await encryptStr(id, algorithm, key);
     const data = new TextEncoder().encode(text);
-    const digestBuffer = await crypto.subtle.digest("SHA-256", data);
+    const digestBuffer = await crypto.subtle.digest('SHA-256', data);
 
     const digestArray = new Uint8Array(digestBuffer);
     const base64Digest = btoa(String.fromCharCode(...digestArray));

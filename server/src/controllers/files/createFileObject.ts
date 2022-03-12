@@ -1,5 +1,5 @@
-import File from "../../models/File";
-import Space from "../../models/Space";
+import File from '../../models/File';
+import Space from '../../models/Space';
 
 interface IFileInit {
     name: string;
@@ -10,20 +10,20 @@ interface IFileInit {
 const createFileObject = async ({ name, size, space }: IFileInit) => {
     try {
         const file = await File.create({ name, size, location: space });
-        if (!file) return "Error: Failed to create file";
+        if (!file) return 'Error: Failed to create file';
 
         const fileId = file._id.toString();
         const updatedSpace = await Space.findByIdAndUpdate(
             space,
             {
                 $push: {
-                    "entities.files": fileId,
+                    'entities.files': fileId,
                 },
             },
             { new: true }
         );
 
-        if (!updatedSpace) return "Error: Failed to update space";
+        if (!updatedSpace) return 'Error: Failed to update space';
         return fileId;
     } catch ({ message }) {
         console.log({ message });

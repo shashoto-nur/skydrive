@@ -1,5 +1,5 @@
-import { createWriteStream } from "streamsaver";
-import { IDecNSave, IDecInit } from "./interfaces";
+import { createWriteStream } from 'streamsaver';
+import { IDecNSave, IDecInit } from './interfaces';
 
 const decryptAndSave = async (
     encData: Uint8Array,
@@ -12,7 +12,7 @@ const decryptAndSave = async (
     );
     const decData = new Uint8Array(decryptedData);
 
-    if (!decData) return console.log("No decrypted data");
+    if (!decData) return console.log('No decrypted data');
 
     writer.write(decData);
 
@@ -23,8 +23,7 @@ const decryptAndSave = async (
         );
 
     writer.close();
-    console.log("File downloaded");
-
+    console.log('File downloaded');
 };
 
 const downloadChunk = async (
@@ -33,7 +32,7 @@ const downloadChunk = async (
 ) => {
     const { socket, chunks, number } = decNSave;
     socket.emit(
-        "get_chunk",
+        'get_chunk',
         chunks[number],
         async ({ chunk }: { chunk: Buffer }) => {
             const encData = new Uint8Array(chunk);
@@ -42,11 +41,16 @@ const downloadChunk = async (
     );
 };
 
-const decryptFile = async ({ chunks, socket, name, key, algorithm }: IDecInit) => {
+const decryptFile = async ({
+    chunks,
+    socket,
+    name,
+    key,
+    algorithm,
+}: IDecInit) => {
     try {
-        if (!key) return console.log("No key");
-        if (!algorithm) return console.log("No algorithm");
-        console.log(chunks.length)
+        if (!key) return console.log('No key');
+        if (!algorithm) return console.log('No algorithm');
 
         const writeableStream = createWriteStream(name);
         const writer = writeableStream.getWriter();

@@ -1,27 +1,35 @@
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
-import { Routes, Route, Link } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+import { Routes, Route, Link } from 'react-router-dom';
 
-import { SignUp, Profile, Login, Spaces, Upload, Space, File } from "../features";
-import { setGlobalKey, setGlobalAlgorithm } from "../features/login/loginSlice";
+import {
+    SignUp,
+    Profile,
+    Login,
+    Spaces,
+    Upload,
+    Space,
+    File,
+} from '../features';
+import { setGlobalKey, setGlobalAlgorithm } from '../features/login/loginSlice';
 
-import "./App.css";
-import { useAppDispatch } from "../app/hooks";
+import './App.css';
+import { useAppDispatch } from '../app/hooks';
 import {
     setGlobalSocketID,
     setGlobalSpaces,
     setGlobalUserId,
-} from "./AppSlice";
+} from './AppSlice';
 
-import { decryptStr } from "../utils/cryptoString";
-import deriveKey from "../utils/deriveKey";
-import getAlgorithm from "../utils/getAlgorithm";
-import { ISpace } from "../features/spaces/spacesSlice";
+import { decryptStr } from '../utils/cryptoString';
+import deriveKey from '../utils/deriveKey';
+import getAlgorithm from '../utils/getAlgorithm';
+import { ISpace } from '../features/spaces/spacesSlice';
 
 const App = () => {
     const socket = io(process.env.REACT_APP_SOCKET_URL!, {
-        transports: ["websocket", "polling"],
-        auth: { token: localStorage.getItem("token") },
+        transports: ['websocket', 'polling'],
+        auth: { token: localStorage.getItem('token') },
     });
     const dispatch = useAppDispatch();
     const [reRender, setReRender] = useState(false);
@@ -29,7 +37,7 @@ const App = () => {
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
 
-        socket.on("connect_error", (err) => {
+        socket.on('connect_error', (err) => {
             console.log(`connect_error due to ${err.message}`);
 
             let runCount = 0;
@@ -43,15 +51,15 @@ const App = () => {
             }, 1000);
         });
 
-        socket.on("message", async ({ id }) => {
+        socket.on('message', async ({ id }) => {
             if (!id) {
-                const loginLink = document.getElementById("login");
+                const loginLink = document.getElementById('login');
                 if (loginLink) return loginLink.click();
-                return console.log("no login link");
+                return console.log('no login link');
             }
 
             dispatch(setGlobalUserId(id));
-            const encPassword = localStorage.getItem("encPassword");
+            const encPassword = localStorage.getItem('encPassword');
 
             const tempKey = (await deriveKey(id)) as CryptoKey;
             const tempAlgorithm = getAlgorithm(id) as {
@@ -73,7 +81,7 @@ const App = () => {
             dispatch(setGlobalKey(key));
             dispatch(setGlobalAlgorithm(algorithm));
 
-            socket.emit("get_enc_spaces", async ({ res }: { res: string }) => {
+            socket.emit('get_enc_spaces', async ({ res }: { res: string }) => {
                 try {
                     if (!res) return;
 
@@ -81,7 +89,7 @@ const App = () => {
                     const receivedSpaces: string[] = JSON.parse(decString);
 
                     socket.emit(
-                        "get_spaces",
+                        'get_spaces',
                         receivedSpaces,
                         ({ res }: { res: ISpace[] }) => {
                             dispatch(setGlobalSpaces(res));
@@ -93,7 +101,7 @@ const App = () => {
             });
             setReRender(true);
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
     const logout = () => {

@@ -18,9 +18,9 @@ const getFileChunk = (
                     const arrayBufferChunk = event.target.result;
                     if (
                         !arrayBufferChunk ||
-                        typeof arrayBufferChunk === "string"
+                        typeof arrayBufferChunk === 'string'
                     )
-                        return "No array buffer chunk";
+                        return 'No array buffer chunk';
                     const uint8Chunk = new Uint8Array(arrayBufferChunk);
 
                     resolve(uint8Chunk);

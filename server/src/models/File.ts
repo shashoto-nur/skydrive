@@ -1,23 +1,21 @@
 import { Model, Schema, model, Types } from 'mongoose';
 
 export interface IFile {
-    id : Types.ObjectId;
+    id: Types.ObjectId;
     name: string;
     createdAt: Date;
     space: Types.ObjectId;
     location: string;
     chunks: [[number]];
     size: number;
-};
+}
 
-interface FileModel extends Model<IFile> {
-    
-};
+interface FileModel extends Model<IFile> {}
 
 const fileSchema = new Schema<IFile, FileModel>({
     name: {
         type: String,
-        required: [true, "Please enter a name"],
+        required: [true, 'Please enter a name'],
     },
     createdAt: {
         type: Date,
@@ -25,18 +23,18 @@ const fileSchema = new Schema<IFile, FileModel>({
     },
     space: {
         type: Types.ObjectId,
-        ref: "space",
+        ref: 'space',
     },
     location: {
         type: String,
-        required: [true, "Please enter a location"],
+        required: [true, 'Please enter a location'],
     },
     chunks: {
         type: [[Number]],
     },
     size: {
         type: Number,
-        required: [true, "Please enter a size"],
+        required: [true, 'Please enter a size'],
     },
 });
 

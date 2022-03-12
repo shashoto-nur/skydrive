@@ -1,7 +1,7 @@
 import { Model, Schema, model, Types } from 'mongoose';
 
 export interface ISpace {
-    id : Types.ObjectId;
+    id: Types.ObjectId;
     name: string;
     preferences: string[];
     bookmarks: string[];
@@ -9,47 +9,51 @@ export interface ISpace {
         files: string[];
         folders: string[];
     };
-};
+}
 
 interface SpaceModel extends Model<ISpace> {
     createSpace: (name: string) => ISpace;
     getSpaces: (ids: string[]) => ISpace[];
-};
+}
 
 const spaceSchema = new Schema<ISpace, SpaceModel>({
     name: {
         type: String,
-        required: [true, 'Please enter a name']
+        required: [true, 'Please enter a name'],
     },
     preferences: {
-        type: [String]
+        type: [String],
     },
     bookmarks: {
-        type: [String]
+        type: [String],
     },
     entities: {
-        files: [{
-            type: Types.ObjectId,
-            ref: 'file'
-        }],
-        folders: [{
-            type: Types.ObjectId,
-            ref: 'folder'
-        }]
-    }
+        files: [
+            {
+                type: Types.ObjectId,
+                ref: 'file',
+            },
+        ],
+        folders: [
+            {
+                type: Types.ObjectId,
+                ref: 'folder',
+            },
+        ],
+    },
 });
 
-spaceSchema.static('createSpace', async function(name) {
+spaceSchema.static('createSpace', async function (name) {
     try {
         const space: ISpace = await Space.create({ name });
         return space;
     } catch (error) {
         console.log('New error:', error);
-    };
+    }
 });
 
-spaceSchema.static('getSpaces', async function(ids) {
-    const spaces = await Space.find({ '_id': { $in: ids } });
+spaceSchema.static('getSpaces', async function (ids) {
+    const spaces = await Space.find({ _id: { $in: ids } });
     return spaces;
 });
 

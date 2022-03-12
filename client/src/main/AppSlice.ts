@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Socket } from "socket.io-client";
-import { RootState } from "../app/store";
-import { ISpace } from "../features/spaces/spacesSlice";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Socket } from 'socket.io-client';
+import { RootState } from '../app/store';
+import { ISpace } from '../features/spaces/spacesSlice';
 
 export interface AppState {
     socket: null | {};
@@ -11,12 +11,12 @@ export interface AppState {
 
 const initialState: AppState = {
     socket: null,
-    userId: "",
+    userId: '',
     spaces: [],
 };
 
 export const appSlice = createSlice({
-    name: "app",
+    name: 'app',
     initialState,
     reducers: {
         setGlobalSocketID: (state, action: PayloadAction<Socket>) => {

@@ -4,11 +4,11 @@ import {
     updatePassword,
     getEncSpaces,
     addSpaceIds,
-} from "../controllers/users/";
+} from '../controllers/users/';
 
 const setUserEvents = (socket: any) => {
     socket.on(
-        "signup",
+        'signup',
         async (
             { email }: { email: string },
             callback: (arg0: { res: string }) => void
@@ -19,7 +19,7 @@ const setUserEvents = (socket: any) => {
     );
 
     socket.on(
-        "login",
+        'login',
         async (
             { email, password }: { email: string; password: string },
             callback: (arg0: {
@@ -37,7 +37,7 @@ const setUserEvents = (socket: any) => {
     );
 
     socket.on(
-        "update_password",
+        'update_password',
         async (
             { password }: { password: string },
             callback: (arg0: {
@@ -51,7 +51,7 @@ const setUserEvents = (socket: any) => {
     );
 
     socket.on(
-        "get_enc_spaces",
+        'get_enc_spaces',
         async (callback: (arg0: { res: string }) => void) => {
             const res = await getEncSpaces(socket.handshake.auth.userId);
             callback({ res });
@@ -59,7 +59,7 @@ const setUserEvents = (socket: any) => {
     );
 
     socket.on(
-        "add_space",
+        'add_space',
         async (id: string, callback: (arg0: { res: string }) => void) => {
             const userId: string = socket.handshake.auth.userId;
             const res = await addSpaceIds(id, userId);

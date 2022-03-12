@@ -4,7 +4,7 @@ interface MailDataType {
     receiver: string;
     text: string;
     subject: string;
-};
+}
 
 async function sendMail(
     mailData: MailDataType,
@@ -16,13 +16,13 @@ async function sendMail(
         from: process.env.MAIL_USER,
         to: receiver,
         subject,
-        text
+        text,
     };
 
-    transporter.sendMail(mailOptions, function(error, info) {
+    transporter.sendMail(mailOptions, function (error, info) {
         if (error) throw error;
         else return callback('Email sent: ' + info.response);
     });
-};
+}
 
 export { sendMail, MailDataType };

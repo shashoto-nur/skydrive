@@ -1,4 +1,4 @@
-import variables from "../env/variables";
+import variables from '../env/variables';
 
 const shouldRepeat = (fileSize: number, end: number) => {
     try {

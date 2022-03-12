@@ -1,4 +1,4 @@
-import variables from "../env/variables";
+import variables from '../env/variables';
 
 const deriveKey = async (passkey: string) => {
     try {
@@ -7,24 +7,24 @@ const deriveKey = async (passkey: string) => {
             return window.crypto.subtle.deriveKey(
                 {
                     name: variables.KEY_ALGO,
-                    salt: new TextEncoder().encode("salt"),
+                    salt: new TextEncoder().encode('salt'),
                     iterations: variables.KEY_ITER,
                     hash: variables.KEY_HASH,
                 },
                 cryptoKey,
                 { name: variables.ALGO, length: variables.KEY_LEN },
                 true,
-                ["encrypt", "decrypt"]
+                ['encrypt', 'decrypt']
             );
         };
 
         // Create a cryptoKey key containing the passkey
         const cryptoKey = await window.crypto.subtle.importKey(
-            "raw",
+            'raw',
             new TextEncoder().encode(passkey),
             { name: variables.KEY_ALGO },
             false,
-            ["deriveKey"]
+            ['deriveKey']
         );
 
         const key = getKey(cryptoKey);

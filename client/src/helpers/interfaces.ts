@@ -1,4 +1,4 @@
-import { Socket } from "socket.io-client";
+import { Socket } from 'socket.io-client';
 
 export interface IBase {
     key: CryptoKey;
@@ -13,6 +13,7 @@ export interface IEncInit extends IBase {
     file: File;
     filename: string;
     id: string;
+    start: number;
 }
 
 export interface IEncNUpload extends IBase {
@@ -21,6 +22,7 @@ export interface IEncNUpload extends IBase {
     end: number;
     chunkNumber: number;
     id: string;
+    chunkArray: [[number]];
 }
 
 export interface IEncUpload {

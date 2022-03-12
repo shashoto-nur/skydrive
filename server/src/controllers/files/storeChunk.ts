@@ -1,7 +1,7 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
-import File from "../../models/File";
-import served from "../../server";
+import File from '../../models/File';
+import served from '../../server';
 
 const sendDocument = async (buffer: Buffer) => {
     try {
@@ -9,14 +9,14 @@ const sendDocument = async (buffer: Buffer) => {
         const {
             document: { file_id },
         } = await bot.telegram.sendDocument(process.env.CHAT_ID!, {
-            source: Buffer.from(buffer.toString("base64")),
-            filename: crypto.randomBytes(10).toString("hex"),
+            source: Buffer.from(buffer.toString('base64')),
+            filename: crypto.randomBytes(10).toString('hex'),
         });
 
         const fileLink = (await bot.telegram.getFileLink(file_id)).toString();
         if (!fileLink) return -1;
 
-        const n = fileLink.lastIndexOf("/");
+        const n = fileLink.lastIndexOf('/');
         const fileNum = +fileLink.substring(n + 6).toString();
 
         return fileNum;
@@ -35,10 +35,14 @@ const storeChunk = async ({
     id,
     number,
     chunk,
+    repeat,
+    chunkArray,
 }: {
     id: string;
     number: number;
     chunk: Buffer;
+    repeat: boolean;
+    chunkArray: [[number]];
 }) => {
     try {
         const limit = 15 * 1024 * 1024;
@@ -55,11 +59,13 @@ const storeChunk = async ({
         let orderedNums: number[] = [];
         for (const fileNum of fileNums) {
             if (fileNum.num === -1) {
-                console.log("Error: File not found");
-                return "Error while sending file";
+                console.log('Error: File not found');
+                return 'Error while sending file';
             }
             orderedNums[fileNum.index] = fileNum.num;
         }
+
+        const whatIDontWant = undefined as any;
 
         const file = await File.findByIdAndUpdate(
             id,
@@ -70,15 +76,18 @@ const storeChunk = async ({
                         $position: number,
                     },
                 },
+                complete:
+                    !repeat && !chunkArray.includes(whatIDontWant),
             },
             { new: true }
         );
-
-        if (!file) return "File not found";
-        return "File is now accessable";
+        
+        if (!file) return 'File not found';
+        const { chunks: updatedChunk } = file;
+        return updatedChunk;
     } catch ({ message }) {
         console.log(message);
-        return "Error while sending file";
+        return 'Error while sending file';
     }
 };
 

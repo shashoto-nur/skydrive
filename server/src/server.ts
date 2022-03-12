@@ -11,7 +11,7 @@ import connectToDatabase from './config/db';
 import startCron from './config/cron';
 
 console.clear();
-console.log('\x1b[36m%s\x1b[0m', 'Starting server...')
+console.log('\x1b[36m%s\x1b[0m', 'Starting server...');
 const transporter = initiateTransport();
 const bot = initiateBot();
 
@@ -27,7 +27,6 @@ const bot = initiateBot();
         const { port } = server!.address() as AddressInfo;
         console.log('\x1b[36m%s\x1b[0m', `Server listening on port ${port}`);
     });
-
 })();
 
 const served = { transporter, bot };

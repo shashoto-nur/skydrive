@@ -1,5 +1,5 @@
 export interface ISpace {
-    _id : string;
+    _id: string;
     name: string;
     preferences: string[];
     bookmarks: string[];
@@ -7,4 +7,4 @@ export interface ISpace {
         files: string[];
         folders: string[];
     };
-};
+}

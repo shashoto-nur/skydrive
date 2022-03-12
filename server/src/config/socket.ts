@@ -1,8 +1,8 @@
-import { Server } from "socket.io";
+import { Server } from 'socket.io';
 
-import setUserID from "../utils/setUserID";
-import setUserEvents from "../events/user";
-import setSpacesEvents from "../events/spaces";
+import setUserID from '../utils/setUserID';
+import setUserEvents from '../events/user';
+import setSpacesEvents from '../events/spaces';
 
 function initiateSocket(server: any) {
     const io = new Server(server, {
@@ -12,14 +12,14 @@ function initiateSocket(server: any) {
     io.use((socket, next) => {
         setUserID(socket);
         next();
-    }).on("connection", (socket: any) => {
+    }).on('connection', (socket: any) => {
         setUserEvents(socket);
         setSpacesEvents(socket);
 
         socket.send({ id: socket.handshake.auth.userId });
     });
 
-    console.log(" Websocket server online...");
+    console.log(' Websocket server online...');
 }
 
 export default initiateSocket;

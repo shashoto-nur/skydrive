@@ -1,4 +1,3 @@
-
 import * as validator from 'validator';
 import bcrypt from 'bcrypt';
 import { Model, Schema, model } from 'mongoose';
@@ -8,7 +7,7 @@ interface IUser {
     password: string;
     verified: boolean;
     spaces: string;
-};
+}
 
 interface UserModel extends Model<IUser> {
     signup: (email: string, password: string) => any;
@@ -16,7 +15,7 @@ interface UserModel extends Model<IUser> {
     updatePassword: (id: string, password: string) => any;
     getEncSpaces: (id: string) => string;
     addSpaceIds: (id: string, spaceIds: string) => any;
-};
+}
 
 const userSchema = new Schema<IUser, UserModel>({
     email: {
@@ -24,7 +23,7 @@ const userSchema = new Schema<IUser, UserModel>({
         required: [true, 'Please enter an email'],
         unique: true,
         lowercase: true,
-        validate: [validator.default.isEmail, 'Please enter a valid email']
+        validate: [validator.default.isEmail, 'Please enter a valid email'],
     },
     password: {
         type: String,
@@ -32,22 +31,25 @@ const userSchema = new Schema<IUser, UserModel>({
     },
     verified: { type: Boolean, default: false },
     spaces: {
-        type: String
+        type: String,
     },
 });
 
-userSchema.static('signup', async function(email, password) {
+userSchema.static('signup', async function (email, password) {
     try {
         const hashedPassword = (await bcrypt.hash(password, 10)).toString();
-        const user: IUser = await User.create({ email, password: hashedPassword });
+        const user: IUser = await User.create({
+            email,
+            password: hashedPassword,
+        });
 
         return user;
     } catch (error) {
         console.log('New error:', error);
-    };
+    }
 });
 
-userSchema.static('login', async function(email, password) {
+userSchema.static('login', async function (email, password) {
     const user = await this.findOne({ email });
     if (!user) throw Error('Incorrect email');
 
@@ -57,15 +59,18 @@ userSchema.static('login', async function(email, password) {
     return user;
 });
 
-userSchema.static('updatePassword', async function(id, password) {
+userSchema.static('updatePassword', async function (id, password) {
     const hashedPassword = (await bcrypt.hash(password, 10)).toString();
-    const user = await User.findByIdAndUpdate(id, { password: hashedPassword, verified: true });
+    const user = await User.findByIdAndUpdate(id, {
+        password: hashedPassword,
+        verified: true,
+    });
     if (!user) throw Error('Invalid token');
 
     return user;
 });
 
-userSchema.static('getEncSpaces', async function(id) {
+userSchema.static('getEncSpaces', async function (id) {
     const user = await User.findById(id);
     if (!user) throw Error('Incorrect email');
 
@@ -73,7 +78,7 @@ userSchema.static('getEncSpaces', async function(id) {
     return spaces;
 });
 
-userSchema.static('addSpaceIds', async function(userId, spaceIds) {
+userSchema.static('addSpaceIds', async function (userId, spaceIds) {
     const user = await User.findByIdAndUpdate(userId, { spaces: spaceIds });
     if (!user) throw Error('Incorrect email');
 

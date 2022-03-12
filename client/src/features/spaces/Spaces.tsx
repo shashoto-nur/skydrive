@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Socket } from "socket.io-client";
+import React, { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
 
-import { useAppSelector } from "../../app/hooks";
-import { selectSocket, selectSpaces } from "../../main/AppSlice";
+import { useAppSelector } from '../../app/hooks';
+import { selectSocket, selectSpaces } from '../../main/AppSlice';
 
-import { selectAlgorithm, selectKey } from "../login/loginSlice";
-import { ISpace } from "./spacesSlice";
+import { selectAlgorithm, selectKey } from '../login/loginSlice';
+import { ISpace } from './spacesSlice';
 
-import { encryptStr } from "../../utils/cryptoString";
-import { Link } from "react-router-dom";
+import { encryptStr } from '../../utils/cryptoString';
+import { Link } from 'react-router-dom';
 
 const Spaces = () => {
     const selectedSocket = useAppSelector(selectSocket);
@@ -16,8 +16,8 @@ const Spaces = () => {
     const key = useAppSelector(selectKey);
     const algorithm = useAppSelector(selectAlgorithm);
 
-    const [space, setSpace] = useState("New space");
-    const [spaceObjects, setSpaceObjects] = useState<ISpace[] | "">("");
+    const [space, setSpace] = useState('New space');
+    const [spaceObjects, setSpaceObjects] = useState<ISpace[] | ''>('');
     const spacesSelected = useAppSelector(selectSpaces);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ const Spaces = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [spacesSelected]);
 
-    if(!selectedSocket || !key || !algorithm) return <></>;
+    if (!selectedSocket || !key || !algorithm) return <></>;
     const socket = selectedSocket as Socket;
 
     const onSpaceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,20 +33,16 @@ const Spaces = () => {
     };
 
     const createSpace = () => {
-        if (space === "New space") return alert("Enter a name for your space!");
+        if (space === 'New space') return alert('Enter a name for your space!');
 
         socket.emit(
-            "create_space",
+            'create_space',
             { space },
             async ({ spaceIds }: { spaceIds: string[] }) => {
                 const string = JSON.stringify(spaceIds);
-                const updatedSpaces = await encryptStr(
-                    string,
-                    algorithm,
-                    key
-                );
+                const updatedSpaces = await encryptStr(string, algorithm, key);
                 socket.emit(
-                    "add_space",
+                    'add_space',
                     updatedSpaces,
                     ({ res }: { res: string }) => {
                         console.log(res);
@@ -64,7 +60,7 @@ const Spaces = () => {
                     {spaceObjects ? (
                         spaceObjects.map((spaceObj, index) => (
                             <div key={index} className="space">
-                                <Link to={"../space/" + spaceObj.name}>
+                                <Link to={'../space/' + spaceObj.name}>
                                     <h2>{spaceObj.name}</h2>
                                 </Link>
                             </div>

@@ -13,7 +13,7 @@ export interface IEncInit extends IBase {
     file: File;
     filename: string;
     id: string;
-    start: number;
+    startFrom: number;
 }
 
 export interface IEncNUpload extends IBase {
@@ -23,6 +23,7 @@ export interface IEncNUpload extends IBase {
     chunkNumber: number;
     id: string;
     chunkArray: [[number]];
+    recovery: boolean;
 }
 
 export interface IEncUpload {

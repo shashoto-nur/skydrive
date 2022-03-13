@@ -94,6 +94,22 @@ const setSpacesEvents = (socket: any) => {
             },
             callback: (arg0: any) => void
         ) => {
+            let file = socket.handshake.auth.files.find(
+                (file: { id: string; uploading: number[] }) => {
+                    if (file.id === id) {
+                        file.uploading = [...file.uploading, number];
+                        return file;
+                    }
+                }
+            );
+            if (!file) {
+                file = {
+                    id,
+                    uploading: [number],
+                };
+                socket.handshake.auth.files.push(file);
+            }
+
             const res = await storeChunk({
                 chunk,
                 number,
@@ -101,6 +117,18 @@ const setSpacesEvents = (socket: any) => {
                 repeat,
                 chunkArray,
             });
+
+            file.uploading = file.uploading.filter(
+                (item: number) => item !== number
+            );
+
+            socket.handshake.auth.files = socket.handshake.auth.files.map(
+                (sockFile: { id: string }) => {
+                    if (sockFile.id === id) return file;
+                    return sockFile;
+                }
+            );
+
             const returnData =
                 typeof res === 'string'
                     ? { chunk: [[0]], err: res }
@@ -108,6 +136,22 @@ const setSpacesEvents = (socket: any) => {
             callback(returnData);
         }
     );
+
+    socket.on(
+        'get_uploading_chunks',
+        (id: string, callback: (arg0: { uploading: number[] }) => void) => {
+            const { uploading } = socket.handshake.auth.files.filter(
+                (file: { id: string; uploading: [number] }) => file.id === id
+            );
+            callback({ uploading });
+        }
+    );
+
+    socket.on('upload_end', (id: string) => {
+        socket.handshake.auth.files = socket.handshake.auth.files.filter(
+            (file: { id: string; uploading: [number] }) => file.id !== id
+        );
+    });
 
     socket.on(
         'get_chunk',

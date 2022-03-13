@@ -37,18 +37,18 @@ const App = () => {
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
 
-        socket.on('connect_error', (err) => {
+        socket.on('connect_error', async (err) => {
             console.log(`connect_error due to ${err.message}`);
+            const pause = (time = 0) => {
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => resolve(), time >= 0 ? time : 0);
+                });
+            };
 
-            let runCount = 0;
-            function tryToConnect() {
-                runCount++;
-                if (runCount > 3) clearInterval(connectInterval);
-                socket.connect();
+            for (let i = 0; i < 3; i++) {
+                await pause(1000);
+                if (socket.connected === false) socket.connect()
             }
-            const connectInterval = setTimeout(() => {
-                tryToConnect();
-            }, 1000);
         });
 
         socket.on('message', async ({ id }) => {

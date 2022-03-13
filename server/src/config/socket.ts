@@ -15,6 +15,7 @@ function initiateSocket(server: any) {
     }).on('connection', (socket: any) => {
         setUserEvents(socket);
         setSpacesEvents(socket);
+        socket.handshake.auth.files = [];
 
         socket.send({ id: socket.handshake.auth.userId });
     });

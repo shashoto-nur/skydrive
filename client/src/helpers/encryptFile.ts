@@ -3,6 +3,7 @@ import shouldRepeat from '../utils/shouldRepeat';
 
 import variables from '../env/variables';
 import { IEncInit, IEncNUpload } from './interfaces';
+import getAllIndexes from '../utils/getAllIndexes';
 
 const encryptChunkNUpload = async ({
     key,
@@ -14,6 +15,7 @@ const encryptChunkNUpload = async ({
     id,
     socket,
     chunkArray,
+    recovery,
 }: IEncNUpload) => {
     try {
         const unencryptedChunk = await getFileChunk(file, start, end);
@@ -29,6 +31,7 @@ const encryptChunkNUpload = async ({
         const encryptedChunk = new Uint8Array(encryptedData);
         const fileSize = file.size + 1;
         let [repeat, newStart, newEnd] = shouldRepeat(fileSize, end);
+        if (recovery) repeat = false;
 
         socket.emit(
             'store_chunk',
@@ -41,14 +44,46 @@ const encryptChunkNUpload = async ({
             },
             async (res: { chunk: [[number]]; err: string }) => {
                 if (res.err) return console.log(res.err);
-                const chunkArray = res.chunk;
+                const { chunk: chunkArray } = res;
+                const missingIndexes = getAllIndexes(chunkArray, undefined);
+
+                if (!repeat && missingIndexes.length === 0) {
+                    socket.emit('upload_end', { id });
+                    return console.log('File uploaded successfully');
+                }
+
                 if (!repeat) {
-                    const missingIndex = chunkArray.indexOf(undefined as any);
-                    if (missingIndex === -1)
-                        return console.log('File uploaded successfully');
-                    [repeat, newStart, newEnd] = shouldRepeat(
-                        fileSize,
-                        variables.CHUNK_SIZE * missingIndex
+                    return socket.emit(
+                        'get_uploading_chunks',
+                        { id },
+                        ({ uploading }: { uploading: [number] }) => {
+                            let missingIndex;
+                            for (let i = 0; i < missingIndexes.length; i++) {
+                                if (!uploading.includes(missingIndexes[i])) {
+                                    [repeat, newStart, newEnd] = shouldRepeat(
+                                        fileSize,
+                                        variables.CHUNK_SIZE * missingIndexes[i]
+                                    );
+                                    missingIndex = missingIndexes[i];
+                                    break;
+                                }
+                            }
+
+                            if(!missingIndex) return;
+
+                            return encryptChunkNUpload({
+                                key,
+                                algorithm,
+                                file,
+                                start: newStart as number,
+                                end: newEnd as number,
+                                chunkNumber: missingIndex,
+                                id,
+                                socket,
+                                chunkArray,
+                                recovery,
+                            });
+                        }
                     );
                 }
 
@@ -62,6 +97,7 @@ const encryptChunkNUpload = async ({
                     id,
                     socket,
                     chunkArray,
+                    recovery,
                 });
             }
         );
@@ -70,22 +106,31 @@ const encryptChunkNUpload = async ({
     }
 };
 
-const encryptFile = async ({ file, key, algorithm, id, socket, start }: IEncInit) => {
+const encryptFile = async ({
+    file,
+    key,
+    algorithm,
+    id,
+    socket,
+    startFrom,
+}: IEncInit) => {
     try {
         if (!key) return 'No key';
         if (!algorithm) return 'No algorithm';
 
-        const end = start + variables.CHUNK_SIZE;
+        const start = startFrom * variables.CHUNK_SIZE;
+        const end = (startFrom + 1) * variables.CHUNK_SIZE;
         encryptChunkNUpload({
             key,
             algorithm,
             file,
             start,
             end,
-            chunkNumber: 0,
+            chunkNumber: startFrom,
             id,
             socket,
             chunkArray: [[0]],
+            recovery: startFrom !== 0,
         });
     } catch ({ message }) {
         console.log(message as string);

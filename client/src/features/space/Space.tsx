@@ -12,7 +12,6 @@ import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
 import getDigest from '../../utils/getDigest';
 import encryptFile from '../../helpers/encryptFile';
-import variables from '../../env/variables';
 
 const Space = () => {
     const { name } = useParams();
@@ -25,7 +24,7 @@ const Space = () => {
     const [files, setFiles] = useState<IFile[] | ''>('');
     const [incompleteFiles, setIncompleteFiles] = useState<IFile[] | ''>('');
     const [recoveringId, setRecoveringId] = useState<string>('');
-    const [completeUntil, setCompleteUntil] = useState<number>(-1);
+    const [missing, setMissing] = useState<number>(-1);
     const [file, setFile] = useState<'' | File>('');
     const [filename, setFilename] = useState('Choose A File');
 
@@ -48,13 +47,12 @@ const Space = () => {
 
         const chunkArr = JSON.parse(selectElement.id);
         const missingIndex = chunkArr.indexOf(undefined);
-        const end = variables.CHUNK_SIZE * missingIndex;
 
-        setCompleteUntil(end);
+        setMissing(missingIndex);
         setRecoveringId(event.target.value);
     };
 
-    const upload = async () => {
+    const recover = async () => {
         const id = recoveringId;
         if (!file || !key || !algorithm)
             return alert(
@@ -66,7 +64,7 @@ const Space = () => {
         const fileAlgo = getAlgorithm(digest);
         if (!fileKey || !fileAlgo) return alert('Try again');
         if(!id) return alert('Please select a file to recover');
-        if(completeUntil === -1) return alert('Please select a file to recover');
+        if(missing === -1) return alert('Please select a file to recover');
 
         await encryptFile({
             id,
@@ -75,7 +73,7 @@ const Space = () => {
             key: fileKey,
             algorithm: fileAlgo,
             socket,
-            start: completeUntil,
+            startFrom: missing,
         });
     }
 
@@ -116,7 +114,7 @@ const Space = () => {
         };
     };
 
-    const getFile = (name: string, chunks: [[number]], id: string) => {
+    const download = (name: string, chunks: [[number]], id: string) => {
         return async () => {
             const digest = await getDigest({ id, algorithm, key });
 
@@ -170,7 +168,7 @@ const Space = () => {
                             ))}
                         </select>
 
-                        <input type="button" value="Upload" onClick={upload} />
+                        <input type="button" value="Upload" onClick={recover} />
                     </form>
                 </>
             )}
@@ -178,7 +176,7 @@ const Space = () => {
                 files.map((file, index) => (
                     <div
                         key={index}
-                        onClick={getFile(file.name, file.chunks, file._id)}
+                        onClick={download(file.name, file.chunks, file._id)}
                     >
                         <h2>{file.name}</h2>
                         <p>{file.size}</p>

@@ -59,7 +59,7 @@ const Upload = () => {
                     algorithm: fileAlgo,
                     id,
                     socket,
-                    start: 0,
+                    startFrom: 0,
                 });
             }
         );

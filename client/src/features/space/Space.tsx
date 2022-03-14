@@ -12,6 +12,7 @@ import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
 import getDigest from '../../utils/getDigest';
 import encryptFile from '../../helpers/encryptFile';
+import variables from '../../env/variables';
 
 const Space = () => {
     const { name } = useParams();
@@ -25,23 +26,31 @@ const Space = () => {
     const [incompleteFiles, setIncompleteFiles] = useState<IFile[] | ''>('');
     const [recoveringId, setRecoveringId] = useState<string>('');
     const [missing, setMissing] = useState<number>(-1);
-    const [file, setFile] = useState<'' | File>('');
-    const [filename, setFilename] = useState('Choose A File');
+    const [reFile, setReFile] = useState<'' | File>('');
+    const [reFilename, setReFilename] = useState('Choose A File');
+    const [partialDown, setPartialDown] = useState<'' | File>('');
+    const [partDownName, setPartDownName] = useState(
+        'Enter partially downloaded file'
+    );
 
-    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectRecoveryFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
-            setFile(event.target.files![0]);
-            setFilename(event.target.files![0].name);
+            setReFile(event.target.files![0]);
+            setReFilename(event.target.files![0].name);
         }
     };
 
-    const clickFileInput = (event: React.KeyboardEvent<HTMLLabelElement>) => {
-        if (event.key === ' ' || event.key === 'Enter')
-            document.getElementById('file')?.click();
+    const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event?.target?.files![0]) {
+            setPartialDown(event.target.files![0]);
+            setPartDownName(event.target.files![0].name);
+        }
     };
 
     if (!socket || !key || !algorithm) return <></>;
-    const selectRecoveringId = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectRecoveringId = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
         const selectedIndex = event.target.options.selectedIndex;
         const selectElement = event.target.options[selectedIndex];
 
@@ -54,29 +63,28 @@ const Space = () => {
 
     const recover = async () => {
         const id = recoveringId;
-        if (!file || !key || !algorithm)
+        if (!reFile || !key || !algorithm)
             return alert(
                 'Please provide a file and a passkey in order to encrypt!'
             );
-        
+
         const digest = await getDigest({ id, algorithm, key });
         const fileKey = await deriveKey(digest);
         const fileAlgo = getAlgorithm(digest);
         if (!fileKey || !fileAlgo) return alert('Try again');
-        if(!id) return alert('Please select a file to recover');
-        if(missing === -1) return alert('Please select a file to recover');
+        if (!id) return alert('Please select a file to recover');
+        if (missing === -1) return alert('Please select a file to recover');
 
         await encryptFile({
             id,
-            file,
-            filename,
+            file: reFile,
+            filename: reFilename,
             key: fileKey,
             algorithm: fileAlgo,
             socket,
             startFrom: missing,
         });
-    }
-
+    };
 
     const space = spaces.find((s) => s.name === name);
     if (!space) return <></>;
@@ -122,12 +130,18 @@ const Space = () => {
             const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert('Try again');
 
+            const startFrom = partialDown
+                ? partialDown.size / variables.CHUNK_SIZE
+                : 0;
+
             decryptFile({
                 chunks,
                 socket,
                 name,
                 key: fileKey,
                 algorithm: fileAlgo,
+                startFrom,
+                partialDown,
             });
         };
     };
@@ -141,28 +155,25 @@ const Space = () => {
                     <h6>Incomplete files</h6>
 
                     <form onSubmit={(event) => event.preventDefault()}>
-                        <label
-                            htmlFor="file"
-                            id="file-label"
-                            tabIndex={0}
-                            onKeyPress={clickFileInput}
-                        >
-                            {file === ''
-                                ? 'Choose a File'
-                                : `${filename.substring(0, 30)}${
-                                      filename.length > 30 ? '...' : ''
-                                  }`}
-                            <input
-                                type="file"
-                                id="file"
-                                name="file"
-                                onChange={onFileChange}
-                            />
-                        </label>
+                        {reFile === ''
+                            ? 'Choose a File'
+                            : `${reFilename.substring(0, 30)}${
+                                  reFilename.length > 30 ? '...' : ''
+                              }`}
+                        <input
+                            type="file"
+                            id="file"
+                            name="file"
+                            onChange={selectRecoveryFile}
+                        />
 
                         <select onChange={selectRecoveringId}>
                             {incompleteFiles.map(({ _id, name, chunks }) => (
-                                <option id={JSON.stringify(chunks)} key={_id} value={_id}>
+                                <option
+                                    id={JSON.stringify(chunks)}
+                                    key={_id}
+                                    value={_id}
+                                >
                                     {name}
                                 </option>
                             ))}
@@ -174,14 +185,18 @@ const Space = () => {
             )}
             {files ? (
                 files.map((file, index) => (
-                    <div
-                        key={index}
-                        onClick={download(file.name, file.chunks, file._id)}
-                    >
+                    <div key={index}>
                         <h2>{file.name}</h2>
                         <p>{file.size}</p>
+                        {partDownName}
+                        <input type="file" onChange={selectPartialDown} />
                         <button onClick={createLink({ id: file._id })}>
                             Share
+                        </button>
+                        <button
+                            onClick={download(file.name, file.chunks, file._id)}
+                        >
+                            Download
                         </button>
                     </div>
                 ))

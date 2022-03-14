@@ -36,6 +36,8 @@ export interface IEncUpload {
 export interface IDecInit extends IBase {
     chunks: [[number]];
     name: string;
+    startFrom: number;
+    partialDown: string | File;
 }
 export interface IDecNSave extends IBase {
     chunks: [[number]];

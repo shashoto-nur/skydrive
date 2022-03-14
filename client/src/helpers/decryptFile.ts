@@ -1,4 +1,6 @@
 import { createWriteStream } from 'streamsaver';
+import variables from '../env/variables';
+import getFileChunk from '../utils/getFileChunk';
 import { IDecNSave, IDecInit } from './interfaces';
 
 const decryptAndSave = async (
@@ -47,6 +49,8 @@ const decryptFile = async ({
     name,
     key,
     algorithm,
+    startFrom,
+    partialDown,
 }: IDecInit) => {
     try {
         if (!key) return console.log('No key');
@@ -55,8 +59,20 @@ const decryptFile = async ({
         const writeableStream = createWriteStream(name);
         const writer = writeableStream.getWriter();
 
+        if(startFrom > 0 && typeof partialDown !== 'string') {
+            for (let index = 0; index < startFrom; index++) {
+                const start = index * variables.CHUNK_SIZE;
+                const end = start + variables.CHUNK_SIZE;
+
+                const decChunk = await getFileChunk(partialDown, start, end);
+                if (typeof decChunk === 'string')
+                    return console.log(decChunk);
+                writer.write(decChunk);
+            }
+        }
+
         await downloadChunk(
-            { key, algorithm, writer, chunks, number: 0, socket },
+            { key, algorithm, writer, chunks, number: startFrom, socket },
             decryptAndSave
         );
     } catch ({ message }) {

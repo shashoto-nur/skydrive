@@ -9,6 +9,7 @@ import { selectSocket } from '../../main/AppSlice';
 import decryptFile from '../../helpers/decryptFile';
 import deriveKey from '../../utils/deriveKey';
 import getAlgorithm from '../../utils/getAlgorithm';
+import variables from '../../env/variables';
 
 const File = () => {
     const { link } = useParams();
@@ -16,6 +17,17 @@ const File = () => {
 
     const [fileObj, setFileObj] = useState<IFile | ''>('');
     const [digest, setDigest] = useState<string>('');
+    const [partialDown, setPartialDown] = useState<'' | File>('');
+    const [partDownName, setPartDownName] = useState(
+        'Enter partially downloaded file'
+    );
+
+    const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event?.target?.files![0]) {
+            setPartialDown(event.target.files![0]);
+            setPartDownName(event.target.files![0].name);
+        }
+    };
 
     useEffect(() => {
         if (!socket) return;
@@ -39,11 +51,15 @@ const File = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
-    const getFile = (name: string, chunks: [[number]], id: string) => {
+    const download = (name: string, chunks: [[number]], id: string) => {
         return async () => {
             const fileKey = await deriveKey(digest);
             const fileAlgo = getAlgorithm(digest);
             if (!fileKey || !fileAlgo) return alert('Try again');
+
+            const startFrom = partialDown
+                ? partialDown.size / variables.CHUNK_SIZE
+                : 0;
 
             decryptFile({
                 chunks,
@@ -51,6 +67,8 @@ const File = () => {
                 name,
                 key: fileKey,
                 algorithm: fileAlgo,
+                startFrom,
+                partialDown,
             });
         };
     };
@@ -58,11 +76,16 @@ const File = () => {
     return (
         <>
             {fileObj ? (
-                <div
-                    onClick={getFile(fileObj.name, fileObj.chunks, fileObj._id)}
-                >
+                <div>
                     <h2>{fileObj.name}</h2>
                     <p>{fileObj.size}</p>
+                    {partDownName}
+                    <input type="file" onChange={selectPartialDown} />
+                    <button
+                        onClick={download(fileObj.name, fileObj.chunks, fileObj._id)}
+                    >
+                        Download
+                    </button>
                 </div>
             ) : (
                 <>No file</>

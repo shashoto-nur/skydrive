@@ -36,6 +36,7 @@
         "mongoose": "^6.1.9",
         "nodemailer": "^6.7.2",
         "socket.io": "^4.4.1",
+        "socket.io-stream": "^0.9.1",
         "telegraf": "^4.6.0",
         "validator": "^13.7.0"
     },

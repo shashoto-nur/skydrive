@@ -47,7 +47,7 @@ const App = () => {
 
             for (let i = 0; i < 3; i++) {
                 await pause(1000);
-                if (socket.connected === false) socket.connect()
+                if (socket.connected === false) socket.connect();
             }
         });
 

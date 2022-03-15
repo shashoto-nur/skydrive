@@ -9,7 +9,7 @@ const sendDocument = async (buffer: Buffer) => {
         const {
             document: { file_id },
         } = await bot.telegram.sendDocument(process.env.CHAT_ID!, {
-            source: Buffer.from(buffer.toString('base64')),
+            source: buffer,
             filename: crypto.randomBytes(10).toString('hex'),
         });
 
@@ -65,7 +65,7 @@ const storeChunk = async ({
             orderedNums[fileNum.index] = fileNum.num;
         }
 
-        const whatIDontWant = undefined as any;
+        const emptyElement = undefined as any;
 
         const file = await File.findByIdAndUpdate(
             id,
@@ -76,12 +76,11 @@ const storeChunk = async ({
                         $position: number,
                     },
                 },
-                complete:
-                    !repeat && !chunkArray.includes(whatIDontWant),
+                complete: !repeat && !chunkArray.includes(emptyElement),
             },
             { new: true }
         );
-        
+
         if (!file) return 'File not found';
         const { chunks: updatedChunk } = file;
         return updatedChunk;

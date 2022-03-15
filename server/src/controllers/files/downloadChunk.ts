@@ -1,29 +1,43 @@
-import axios from 'axios';
-import { inflateSync } from 'zlib';
+import https from 'https';
+import { Socket } from 'socket.io';
 
-type IResponse = {
-    data: string;
-};
-
-const downloadChunk = async (fileNums: [number]) => {
+const downloadChunk = async ({
+    fileNums,
+    number,
+    socket,
+    callback,
+}: {
+    fileNums: [number];
+    number: number;
+    socket: Socket;
+    callback: (arg0: { status: string }) => void;
+}) => {
     try {
-        const responses: IResponse[] = await axios.all(
-            fileNums.map((fileNum: number) =>
-                axios.get(process.env.FILE_LINK! + fileNum)
-            )
-        );
 
-        const b64Buf = Buffer.from(
-            responses.reduce((acc, curr) => {
-                return acc + curr.data;
-            }, ''),
-            'base64'
-        );
+        fileNums.map((fileNum: number) => {
+            https.get(process.env.FILE_LINK! + fileNum, (receivingStream) => {
+                receivingStream.on('data', (data: Buffer) => {
+                    socket.emit('Get_chunk', {
+                        data,
+                        number,
+                        end: false
+                    });
+                });
 
-        return b64Buf;
+                receivingStream.on('end', () => {
+                    callback({ status: 'Data stream is available' });
+                    const data = Buffer.alloc(0);
+                    socket.emit('Get_chunk', {
+                        data,
+                        number,
+                        end: true
+                    });
+                });
+            });
+        });
     } catch ({ message }) {
         console.log(message);
-        return -1;
+        callback({ status: message as string });
     }
 };
 

@@ -69,7 +69,7 @@ const encryptChunkNUpload = async ({
                                 }
                             }
 
-                            if(!missingIndex) return;
+                            if (!missingIndex) return;
 
                             return encryptChunkNUpload({
                                 key,

@@ -82,7 +82,11 @@ const File = () => {
                     {partDownName}
                     <input type="file" onChange={selectPartialDown} />
                     <button
-                        onClick={download(fileObj.name, fileObj.chunks, fileObj._id)}
+                        onClick={download(
+                            fileObj.name,
+                            fileObj.chunks,
+                            fileObj._id
+                        )}
                     >
                         Download
                     </button>

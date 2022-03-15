@@ -24,14 +24,13 @@ const Space = () => {
 
     const [files, setFiles] = useState<IFile[] | ''>('');
     const [incompleteFiles, setIncompleteFiles] = useState<IFile[] | ''>('');
+
     const [recoveringId, setRecoveringId] = useState<string>('');
     const [missing, setMissing] = useState<number>(-1);
     const [reFile, setReFile] = useState<'' | File>('');
     const [reFilename, setReFilename] = useState('Choose A File');
+
     const [partialDown, setPartialDown] = useState<'' | File>('');
-    const [partDownName, setPartDownName] = useState(
-        'Enter partially downloaded file'
-    );
 
     const selectRecoveryFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -43,7 +42,6 @@ const Space = () => {
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
             setPartialDown(event.target.files![0]);
-            setPartDownName(event.target.files![0].name);
         }
     };
 
@@ -148,7 +146,7 @@ const Space = () => {
 
     return (
         <>
-            <h6>{name}</h6>
+            <h2>{name}</h2>
 
             {incompleteFiles && (
                 <>
@@ -186,9 +184,9 @@ const Space = () => {
             {files ? (
                 files.map((file, index) => (
                     <div key={index}>
-                        <h2>{file.name}</h2>
-                        <p>{file.size}</p>
-                        {partDownName}
+                        <h3>{file.name}</h3>
+                        <p>Size: {Math.ceil(file.size / (1024 * 1024))} mb</p>
+
                         <input type="file" onChange={selectPartialDown} />
                         <button onClick={createLink({ id: file._id })}>
                             Share
@@ -201,7 +199,7 @@ const Space = () => {
                     </div>
                 ))
             ) : (
-                <h2>No files</h2>
+                <h3>No files</h3>
             )}
         </>
     );

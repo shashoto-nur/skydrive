@@ -8,8 +8,9 @@ import {
 } from '../controllers/files/';
 import { ISpace } from '../models/Space';
 import { IFile } from '../models/File';
+import { Socket } from 'socket.io';
 
-const setSpacesEvents = (socket: any) => {
+const setSpacesEvents = (socket: Socket) => {
     socket.on(
         'create_space',
         async (
@@ -156,11 +157,10 @@ const setSpacesEvents = (socket: any) => {
     socket.on(
         'get_chunk',
         async (
-            fileNums: [number],
-            callback: (arg0: { chunk: Buffer | number }) => void
+            { fileNums, number }: { fileNums: [number]; number: number },
+            callback: (arg0: { status: string }) => void
         ) => {
-            const chunk = await downloadChunk(fileNums);
-            callback({ chunk });
+            await downloadChunk({ fileNums, number, socket, callback });
         }
     );
 };

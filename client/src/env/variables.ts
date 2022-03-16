@@ -1,4 +1,4 @@
-const CHUNK_SIZE = 44.5 * 1024 * 1024; // 45 megabyte
+const CHUNK_SIZE = 60 * 1024 * 1024; // 60 megabyte
 const PADDING = 16; // 16 bits padding
 
 const IV_SIZE = 12; // 12 bits

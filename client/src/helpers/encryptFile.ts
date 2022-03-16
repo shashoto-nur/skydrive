@@ -119,7 +119,7 @@ const encryptFile = async ({
         if (!algorithm) return 'No algorithm';
 
         const start = startFrom * variables.CHUNK_SIZE;
-        const end = (startFrom + 1) * variables.CHUNK_SIZE;
+        const end = start + variables.CHUNK_SIZE - variables.PADDING;
         encryptChunkNUpload({
             key,
             algorithm,

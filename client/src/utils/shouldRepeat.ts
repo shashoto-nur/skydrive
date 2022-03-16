@@ -3,7 +3,7 @@ import variables from '../env/variables';
 const shouldRepeat = (fileSize: number, end: number) => {
     try {
         if (fileSize > end) {
-            const newEnd = end + variables.CHUNK_SIZE;
+            const newEnd = end + variables.CHUNK_SIZE - variables.PADDING;
             const start = end;
             end = fileSize > newEnd ? newEnd : fileSize;
 

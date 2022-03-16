@@ -34,10 +34,10 @@ const spaceSchema = new Schema<ISpace, SpaceModel>({
                 ref: 'file',
             },
         ],
-        folders: [
+        subspaces: [
             {
                 type: Types.ObjectId,
-                ref: 'folder',
+                ref: 'space',
             },
         ],
     },

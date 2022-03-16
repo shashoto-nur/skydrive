@@ -26,7 +26,6 @@
     },
     "homepage": "https://github.com/shashoto-nur/skydrive#readme",
     "dependencies": {
-        "axios": "^0.26.0",
         "bcrypt": "^5.0.1",
         "cors": "^2.8.5",
         "cron": "^1.8.2",
@@ -36,7 +35,6 @@
         "mongoose": "^6.1.9",
         "nodemailer": "^6.7.2",
         "socket.io": "^4.4.1",
-        "socket.io-stream": "^0.9.1",
         "telegraf": "^4.6.0",
         "validator": "^13.7.0"
     },

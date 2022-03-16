@@ -45,7 +45,7 @@ const storeChunk = async ({
     chunkArray: [[number]];
 }) => {
     try {
-        const limit = 15 * 1024 * 1024;
+        const limit = 20 * 1024 * 1024;
         const slices = divideBuffer(chunk, limit);
 
         const getFileNum = slices.map(async (slice, index) => {

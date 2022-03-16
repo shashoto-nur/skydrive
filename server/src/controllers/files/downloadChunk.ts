@@ -13,14 +13,13 @@ const downloadChunk = async ({
     callback: (arg0: { status: string }) => void;
 }) => {
     try {
-
         fileNums.map((fileNum: number) => {
             https.get(process.env.FILE_LINK! + fileNum, (receivingStream) => {
                 receivingStream.on('data', (data: Buffer) => {
                     socket.emit('Get_chunk', {
                         data,
                         number,
-                        end: false
+                        end: false,
                     });
                 });
 
@@ -30,7 +29,7 @@ const downloadChunk = async ({
                     socket.emit('Get_chunk', {
                         data,
                         number,
-                        end: true
+                        end: true,
                     });
                 });
             });

@@ -3,13 +3,12 @@ import { useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
 import { useAppSelector } from '../../app/hooks';
-import { IFile } from '../space/spaceSlice';
+import { IFile } from '../view/viewSlice';
 import { selectSocket } from '../../main/AppSlice';
 
 import decryptFile from '../../helpers/decryptFile';
-import deriveKey from '../../utils/deriveKey';
-import getAlgorithm from '../../utils/getAlgorithm';
-import variables from '../../env/variables';
+import { deriveKey, getAlgorithm } from '../../utils';
+import variables from '../../env';
 
 const File = () => {
     const { link } = useParams();

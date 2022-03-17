@@ -7,9 +7,7 @@ import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { ISpace } from '../spaces/spacesSlice';
 
 import encryptFile from '../../helpers/encryptFile';
-import deriveKey from '../../utils/deriveKey';
-import getAlgorithm from '../../utils/getAlgorithm';
-import getDigest from '../../utils/getDigest';
+import { deriveKey, getAlgorithm, getDigest } from '../../utils';
 
 const Upload = () => {
     const socket = useAppSelector(selectSocket) as Socket;

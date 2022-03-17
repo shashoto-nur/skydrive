@@ -4,9 +4,7 @@ import { Socket } from 'socket.io-client';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectSocket } from '../../main/AppSlice';
 
-import deriveKey from '../../utils/deriveKey';
-import getAlgorithm from '../../utils/getAlgorithm';
-import { encryptStr } from '../../utils/cryptoString';
+import { deriveKey, getAlgorithm, encryptStr } from '../../utils';
 
 import { setGlobalAlgorithm, setGlobalKey } from './loginSlice';
 

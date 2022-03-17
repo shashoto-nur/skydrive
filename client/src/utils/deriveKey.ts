@@ -1,4 +1,4 @@
-import variables from '../env/variables';
+import variables from '../env';
 
 const deriveKey = async (passkey: string) => {
     try {

@@ -1,9 +1,7 @@
-import getFileChunk from '../utils/getFileChunk';
-import shouldRepeat from '../utils/shouldRepeat';
+import { getFileChunk, shouldRepeat, getAllIndexes } from '../utils';
 
-import variables from '../env/variables';
+import variables from '../env';
 import { IEncInit, IEncNUpload } from './interfaces';
-import getAllIndexes from '../utils/getAllIndexes';
 
 const encryptChunkNUpload = async ({
     key,

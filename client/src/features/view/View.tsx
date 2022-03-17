@@ -5,17 +5,15 @@ import { useParams } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
-import { IFile } from './spaceSlice';
+import { IFile } from './viewSlice';
 
 import decryptFile from '../../helpers/decryptFile';
-import deriveKey from '../../utils/deriveKey';
-import getAlgorithm from '../../utils/getAlgorithm';
-import getDigest from '../../utils/getDigest';
+import { deriveKey, getAlgorithm, getDigest } from '../../utils';
 import encryptFile from '../../helpers/encryptFile';
-import variables from '../../env/variables';
+import variables from '../../env';
 
 const Space = () => {
-    const { name } = useParams();
+    const { location } = useParams();
 
     const socket = useAppSelector(selectSocket) as Socket;
     const spaces = useAppSelector(selectSpaces);
@@ -84,7 +82,7 @@ const Space = () => {
         });
     };
 
-    const space = spaces.find((s) => s.name === name);
+    const space = spaces.find((s) => s.name === location);
     if (!space) return <></>;
 
     let fileIds: string[] = space.entities.files;
@@ -146,7 +144,7 @@ const Space = () => {
 
     return (
         <>
-            <h2>{name}</h2>
+            <h2>{location}</h2>
 
             {incompleteFiles && (
                 <>

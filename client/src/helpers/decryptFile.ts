@@ -1,7 +1,7 @@
 import { createWriteStream } from 'streamsaver';
 
-import variables from '../env/variables';
-import getFileChunk from '../utils/getFileChunk';
+import variables from '../env';
+import { getFileChunk } from '../utils';
 import { IDecNSave, IDecInit } from './interfaces';
 
 const decryptAndSave = async (
@@ -9,6 +9,7 @@ const decryptAndSave = async (
     { key, algorithm, writer, chunks, number, socket }: IDecNSave
 ) => {
     try {
+        console.log(encData.length);
         const decryptedData = await window.crypto.subtle.decrypt(
             algorithm,
             key,
@@ -69,6 +70,7 @@ const decryptFile = async ({
         let chunk = new Uint8Array(0);
         socket.on('Get_chunk', ({ data, number, end }) => {
             const encData = new Uint8Array(data);
+            socket.emit('received_buffer_stream');
             chunk = new Uint8Array([...chunk, ...encData]);
             if (!end) return;
 

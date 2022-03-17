@@ -1,4 +1,4 @@
-import { encryptStr } from './cryptoString';
+import { encryptStr } from '.';
 
 const getDigest = async ({
     id,

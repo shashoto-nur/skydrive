@@ -7,7 +7,7 @@ import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 import { ISpace } from './spacesSlice';
 
-import { encryptStr } from '../../utils/cryptoString';
+import { encryptStr } from '../../utils';
 import { Link } from 'react-router-dom';
 
 const Spaces = () => {
@@ -37,7 +37,7 @@ const Spaces = () => {
 
         socket.emit(
             'create_space',
-            { space },
+            { name: space, location: space },
             async ({ spaceIds }: { spaceIds: string[] }) => {
                 const string = JSON.stringify(spaceIds);
                 const updatedSpaces = await encryptStr(string, algorithm, key);
@@ -60,7 +60,7 @@ const Spaces = () => {
                     {spaceObjects ? (
                         spaceObjects.map((spaceObj, index) => (
                             <div key={index} className="space">
-                                <Link to={'../space/' + spaceObj.name}>
+                                <Link to={'../view/' + spaceObj.name}>
                                     <h2>{spaceObj.name}</h2>
                                 </Link>
                             </div>

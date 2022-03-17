@@ -1,8 +1,7 @@
 import { Server } from 'socket.io';
 
 import setUserID from '../utils/setUserID';
-import setUserEvents from '../events/user';
-import setSpacesEvents from '../events/spaces';
+import { setUserEvents, setSpacesEvents, setFilesEvents } from '../events';
 
 function initiateSocket(server: any) {
     const io = new Server(server, {
@@ -15,8 +14,9 @@ function initiateSocket(server: any) {
     }).on('connection', (socket: any) => {
         setUserEvents(socket);
         setSpacesEvents(socket);
-        socket.handshake.auth.files = [];
+        setFilesEvents(socket);
 
+        socket.handshake.auth.files = [];
         socket.send({ id: socket.handshake.auth.userId });
     });
 

@@ -13,6 +13,8 @@
     encDigest = EPK(pub, digest)
     send(encData, encDigest)
 
+## Files viewer
+
 ## Automated Encryption Update
 
     List all files in storage

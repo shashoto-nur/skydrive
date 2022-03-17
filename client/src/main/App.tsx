@@ -8,7 +8,7 @@ import {
     Login,
     Spaces,
     Upload,
-    Space,
+    View,
     File,
 } from '../features';
 import { setGlobalKey, setGlobalAlgorithm } from '../features/login/loginSlice';
@@ -21,9 +21,7 @@ import {
     setGlobalUserId,
 } from './AppSlice';
 
-import { decryptStr } from '../utils/cryptoString';
-import deriveKey from '../utils/deriveKey';
-import getAlgorithm from '../utils/getAlgorithm';
+import { deriveKey, getAlgorithm, decryptStr } from '../utils';
 import { ISpace } from '../features/spaces/spacesSlice';
 
 const App = () => {
@@ -143,7 +141,7 @@ const App = () => {
                     <Route path="profile" element={<Profile />} />
                     <Route path="spaces" element={<Spaces />} />
                     <Route path="upload" element={<Upload />} />
-                    <Route path="space/:name" element={<Space />} />
+                    <Route path="view/:location" element={<View />} />
                     <Route path="file/:link" element={<File />} />
                 </Routes>
             </main>

@@ -14,7 +14,7 @@ const setFilesEvents = (socket: Socket) => {
     socket.on(
         'upload_file',
         async (
-            fileData: { name: string; size: number; space: string },
+            fileData: { name: string; size: number; chunkNum: number, space: string },
             callback: (arg0: { id: any }) => void
         ) => {
             const id: string = await createFileObject(fileData);
@@ -130,6 +130,6 @@ const setFilesEvents = (socket: Socket) => {
             await downloadChunk({ fileNums, number, socket, callback });
         }
     );
-}
+};
 
 export default setFilesEvents;

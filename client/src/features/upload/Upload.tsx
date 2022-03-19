@@ -8,6 +8,7 @@ import { ISpace } from '../spaces/spacesSlice';
 
 import encryptFile from '../../helpers/encryptFile';
 import { deriveKey, getAlgorithm, getDigest } from '../../utils';
+import variables from '../../env';
 
 const Upload = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -39,10 +40,12 @@ const Upload = () => {
             return alert(
                 'Please provide a file and a passkey in order to encrypt!'
             );
+        
+        const chunkNum = Math.ceil(file.size / variables.CHUNK_SIZE);
 
         socket.emit(
             'upload_file',
-            { name: filename, size: file.size, space },
+            { name: filename, size: file.size, chunkNum, space },
             async ({ id }: { id: string }) => {
                 const digest = await getDigest({ id, algorithm, key });
 

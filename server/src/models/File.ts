@@ -7,6 +7,7 @@ export interface IFile {
     space: Types.ObjectId;
     location: string;
     chunks: [[number]];
+    chunkNum: number;
     size: number;
 }
 
@@ -31,6 +32,10 @@ const fileSchema = new Schema<IFile, FileModel>({
     },
     chunks: {
         type: [[Number]],
+    },
+    chunkNum: {
+        type: Number,
+        default: 0,
     },
     size: {
         type: Number,

@@ -54,3 +54,4 @@
     Profile modification (avatar, password reset, delete user)
     Installable web app
     Tutorials & Docs
+    UI & UX

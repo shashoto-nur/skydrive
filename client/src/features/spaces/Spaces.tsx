@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useAppSelector } from '../../app/hooks';
 import { selectSocket, selectSpaces } from '../../main/AppSlice';
 
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 import { ISpace } from './spacesSlice';
-
-import { encryptStr } from '../../utils';
-import { Link } from 'react-router-dom';
+import NewSpace from '../newspace/NewSpace';
 
 const Spaces = () => {
     const selectedSocket = useAppSelector(selectSocket);
@@ -16,7 +14,6 @@ const Spaces = () => {
     const key = useAppSelector(selectKey);
     const algorithm = useAppSelector(selectAlgorithm);
 
-    const [space, setSpace] = useState('New space');
     const [spaceObjects, setSpaceObjects] = useState<ISpace[] | ''>('');
     const spacesSelected = useAppSelector(selectSpaces);
 
@@ -26,31 +23,6 @@ const Spaces = () => {
     }, [spacesSelected]);
 
     if (!selectedSocket || !key || !algorithm) return <></>;
-    const socket = selectedSocket as Socket;
-
-    const onSpaceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSpace(event.target.value);
-    };
-
-    const createSpace = () => {
-        if (space === 'New space') return alert('Enter a name for your space!');
-
-        socket.emit(
-            'create_space',
-            { name: space, location: space },
-            async ({ spaceIds }: { spaceIds: string[] }) => {
-                const string = JSON.stringify(spaceIds);
-                const updatedSpaces = await encryptStr(string, algorithm, key);
-                socket.emit(
-                    'add_space',
-                    updatedSpaces,
-                    ({ res }: { res: string }) => {
-                        console.log(res);
-                    }
-                );
-            }
-        );
-    };
 
     return (
         <>
@@ -60,7 +32,7 @@ const Spaces = () => {
                     {spaceObjects ? (
                         spaceObjects.map((spaceObj, index) => (
                             <div key={index} className="space">
-                                <Link to={'../view/' + spaceObj.name}>
+                                <Link to={'../view/' + spaceObj.location}>
                                     <h2>{spaceObj.name}</h2>
                                 </Link>
                             </div>
@@ -71,18 +43,7 @@ const Spaces = () => {
                 </div>
             </div>
 
-            <form onSubmit={(event) => event.preventDefault()}>
-                <input
-                    type="text"
-                    name="space"
-                    className="textbox"
-                    onChange={onSpaceChange}
-                    placeholder={space}
-                />
-                <button type="submit" className="button" onClick={createSpace}>
-                    Create
-                </button>
-            </form>
+            <NewSpace />
         </>
     );
 };

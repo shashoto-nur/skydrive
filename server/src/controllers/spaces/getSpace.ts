@@ -1,0 +1,24 @@
+import Space, { ISpace } from '../../models/Space';
+
+async function getSpace({
+    location,
+    id,
+}: {
+    location: string;
+    id: string | undefined;
+}): Promise<string | ISpace> {
+    try {
+        const space = await Space.findOne({ baseSpace: id, location })
+            .populate('entities.files')
+            .populate('entities.subspaces');
+
+        if (!space) return 'Error: Failed to find space';
+
+        return space;
+    } catch ({ message }) {
+        console.log('New error:', message);
+        return message as string;
+    }
+}
+
+export default getSpace;

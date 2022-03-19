@@ -1,11 +1,13 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import AppReducer from '../main/AppSlice';
 import loginReducer from '../features/login/loginSlice';
+import viewReducer from '../features/view/viewSlice';
 
 export const store = configureStore({
     reducer: {
         app: AppReducer,
         login: loginReducer,
+        view: viewReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

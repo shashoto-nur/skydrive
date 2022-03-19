@@ -5,11 +5,12 @@ interface IFileInit {
     name: string;
     size: number;
     space: string;
+    chunkNum: number;
 }
 
-const createFileObject = async ({ name, size, space }: IFileInit) => {
+const createFileObject = async ({ name, size, chunkNum, space }: IFileInit) => {
     try {
-        const file = await File.create({ name, size, location: space });
+        const file = await File.create({ name, size, chunkNum, location: space });
         if (!file) return 'Error: Failed to create file';
 
         const fileId = file._id.toString();

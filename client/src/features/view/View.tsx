@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
-import { IFile } from './viewSlice';
+import { IFile, setGlobalIncompleteFiles } from './viewSlice';
 
 import decryptFile from '../../helpers/decryptFile';
 import { deriveKey, getAlgorithm, getDigest } from '../../utils';
-import encryptFile from '../../helpers/encryptFile';
 import variables from '../../env';
+import { NewSpace, Recover } from '../';
+import { IPopulatedSpace, ISpace } from '../spaces/spacesSlice';
 
 const Space = () => {
     const { location } = useParams();
+    const dispatch = useAppDispatch();
 
     const socket = useAppSelector(selectSocket) as Socket;
     const spaces = useAppSelector(selectSpaces);
@@ -21,21 +23,8 @@ const Space = () => {
     const algorithm = useAppSelector(selectAlgorithm);
 
     const [files, setFiles] = useState<IFile[] | ''>('');
-    const [incompleteFiles, setIncompleteFiles] = useState<IFile[] | ''>('');
-
-    const [recoveringId, setRecoveringId] = useState<string>('');
-    const [missing, setMissing] = useState<number>(-1);
-    const [reFile, setReFile] = useState<'' | File>('');
-    const [reFilename, setReFilename] = useState('Choose A File');
-
     const [partialDown, setPartialDown] = useState<'' | File>('');
-
-    const selectRecoveryFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event?.target?.files![0]) {
-            setReFile(event.target.files![0]);
-            setReFilename(event.target.files![0].name);
-        }
-    };
+    const [subspaces, setSubSpaces] = useState<ISpace[] | ''>('');
 
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -43,64 +32,43 @@ const Space = () => {
         }
     };
 
-    if (!socket || !key || !algorithm) return <></>;
-    const selectRecoveringId = (
-        event: React.ChangeEvent<HTMLSelectElement>
-    ) => {
-        const selectedIndex = event.target.options.selectedIndex;
-        const selectElement = event.target.options[selectedIndex];
+    function partition(
+        array: IFile[],
+        isComplete: { (file: IFile): boolean; (arg0: IFile): any }
+    ) {
+        let com: IFile[] = [];
+        let incom: IFile[] = [];
+        return array.reduce(
+            ([com, incom], elem) => {
+                if (isComplete(elem)) com.push(elem);
+                else incom.push(elem);
 
-        const chunkArr = JSON.parse(selectElement.id);
-        const missingIndex = chunkArr.indexOf(undefined);
+                return [com, incom];
+            },
+            [com, incom]
+        );
+    }
 
-        setMissing(missingIndex);
-        setRecoveringId(event.target.value);
-    };
-
-    const recover = async () => {
-        const id = recoveringId;
-        if (!reFile || !key || !algorithm)
-            return alert(
-                'Please provide a file and a passkey in order to encrypt!'
-            );
-
-        const digest = await getDigest({ id, algorithm, key });
-        const fileKey = await deriveKey(digest);
-        const fileAlgo = getAlgorithm(digest);
-        if (!fileKey || !fileAlgo) return alert('Try again');
-        if (!id) return alert('Please select a file to recover');
-        if (missing === -1) return alert('Please select a file to recover');
-
-        await encryptFile({
-            id,
-            file: reFile,
-            filename: reFilename,
-            key: fileKey,
-            algorithm: fileAlgo,
-            socket,
-            startFrom: missing,
-        });
-    };
-
-    const space = spaces.find((s) => s.name === location);
-    if (!space) return <></>;
-
-    let fileIds: string[] = space.entities.files;
-    if (!fileIds) return <></>;
+    if(!location) return <div>Invalid Path</div>;
+    const baseSpace = location.slice(0, location.indexOf('/'));
+    const space = spaces.find((s) => s.name === baseSpace);
+    if (!socket || !key || !algorithm || !space) return <></>;
 
     if (!files) {
         socket.emit(
-            'get_files',
-            fileIds,
-            ({
-                files,
-                incompleteFiles,
-            }: {
-                files: IFile[];
-                incompleteFiles: IFile[];
-            }) => {
-                setFiles(files);
-                setIncompleteFiles(incompleteFiles);
+            'get_space',
+            { location, id: space._id },
+            ({ space, err }: { space: IPopulatedSpace; err: string }) => {
+                if (err) return console.log(err);
+                const allFiles = space.entities.files;
+                const [incompleteFiles, completeFiles] = partition(
+                    allFiles,
+                    (file: IFile) => file.chunks.length === file.chunkNum
+                );
+
+                dispatch(setGlobalIncompleteFiles(incompleteFiles));
+                setFiles(completeFiles);
+                setSubSpaces(space.entities.subspaces);
             }
         );
     }
@@ -146,39 +114,19 @@ const Space = () => {
         <>
             <h2>{location}</h2>
 
-            {incompleteFiles && (
+            {subspaces && subspaces.length > 0 && (
                 <>
-                    <h6>Incomplete files</h6>
-
-                    <form onSubmit={(event) => event.preventDefault()}>
-                        {reFile === ''
-                            ? 'Choose a File'
-                            : `${reFilename.substring(0, 30)}${
-                                  reFilename.length > 30 ? '...' : ''
-                              }`}
-                        <input
-                            type="file"
-                            id="file"
-                            name="file"
-                            onChange={selectRecoveryFile}
-                        />
-
-                        <select onChange={selectRecoveringId}>
-                            {incompleteFiles.map(({ _id, name, chunks }) => (
-                                <option
-                                    id={JSON.stringify(chunks)}
-                                    key={_id}
-                                    value={_id}
-                                >
-                                    {name}
-                                </option>
-                            ))}
-                        </select>
-
-                        <input type="button" value="Upload" onClick={recover} />
-                    </form>
+                    <h3>Subspaces</h3>
+                    <ul>
+                        {subspaces.map(({ location }) => (
+                            <li key={location}>
+                                <a href={`/space/${location}`}>{location}</a>
+                            </li>
+                        ))}
+                    </ul>
                 </>
             )}
+
             {files ? (
                 files.map((file, index) => (
                     <div key={index}>
@@ -187,7 +135,7 @@ const Space = () => {
 
                         <input type="file" onChange={selectPartialDown} />
                         <button onClick={createLink({ id: file._id })}>
-                            Share
+                            Get Link
                         </button>
                         <button
                             onClick={download(file.name, file.chunks, file._id)}
@@ -199,6 +147,9 @@ const Space = () => {
             ) : (
                 <h3>No files</h3>
             )}
+
+            <Recover />
+            <NewSpace />
         </>
     );
 };

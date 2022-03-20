@@ -5,6 +5,7 @@ import getAllIndexes from './getAllIndexes';
 import getDigest from './getDigest';
 import getFileChunk from './getFileChunk';
 import shouldRepeat from './shouldRepeat';
+import slugify from './slugify';
 
 export {
     encryptStr,
@@ -15,4 +16,5 @@ export {
     getDigest,
     getFileChunk,
     shouldRepeat,
+    slugify,
 };

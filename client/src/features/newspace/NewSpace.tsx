@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
 import { useAppSelector } from '../../app/hooks';
-import { selectSocket } from '../../main/AppSlice';
+import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 
-import { encryptStr } from '../../utils';
+import { encryptStr, slugify } from '../../utils';
 
 const NewSpace = () => {
+    const { baseSpace } = useParams();
     const selectedSocket = useAppSelector(selectSocket);
 
     const key = useAppSelector(selectKey);
     const algorithm = useAppSelector(selectAlgorithm);
+    const spaces = useAppSelector(selectSpaces);
 
     const [space, setSpace] = useState('New space');
 
-    if (!selectedSocket || !key || !algorithm) return <></>;
+    if (!selectedSocket || !key || !algorithm) return <>Eh...</>;
     const socket = selectedSocket as Socket;
 
     const onSpaceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,27 +27,34 @@ const NewSpace = () => {
 
     const createSpace = () => {
         if (space === 'New space') return alert('Enter a name for your space!');
-        const slugifiedSpace = space
-            .replace(/[^a-zA-Z0-9\s]/g, '')
-            .toLowerCase()
-            .replace(/\s/g, '-');
-        let location = slugifiedSpace;
+        const slugifiedSpace = slugify(space);
 
-        const currentLocation = window.location.href;
-        let index: number, baseSpace = '';
-        const viewHref = 'view/';
+        const url = window.location.href;
 
-        if (currentLocation.includes(viewHref)) {
-            index = currentLocation.indexOf(viewHref);
-            const preLocation = currentLocation.slice(index + viewHref.length);
-            location = preLocation + slugifiedSpace;
-            baseSpace = location.slice(0, location.indexOf('/'));
-        }
+        const index = baseSpace ? url.indexOf(baseSpace) : url.length;
+        const remLocation = url.slice(index);
+        const location = (
+            (remLocation ? remLocation + '/' : '') + slugifiedSpace
+        ).replace(/\/$/, '');
+
+        const baseObj = spaces.find((s) => s.location === baseSpace);
 
         socket.emit(
             'create_space',
-            { name: space, location, baseSpace },
-            async ({ spaceIds }: { spaceIds: string[] }) => {
+            {
+                name: space,
+                location,
+                baseSpace: baseObj?._id,
+                parentLoc: remLocation,
+            },
+            async ({
+                spaceIds,
+                isBaseSpace,
+            }: {
+                spaceIds: string[];
+                isBaseSpace: boolean;
+            }) => {
+                if (!isBaseSpace) return;
                 const string = JSON.stringify(spaceIds);
                 const updatedSpaces = await encryptStr(string, algorithm, key);
                 socket.emit(

@@ -67,12 +67,17 @@ spaceSchema.static(
     'createSpace',
     async function ({ name, location, baseSpace }) {
         try {
-            const space: ISpace = await Space.create({
+            if (baseSpace)
+                return await Space.create({
+                    name,
+                    location,
+                    baseSpace,
+                });
+
+            return await Space.create({
                 name,
                 location,
-                baseSpace,
             });
-            return space;
         } catch (error) {
             console.log('New error:', error);
         }

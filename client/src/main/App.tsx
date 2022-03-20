@@ -7,7 +7,6 @@ import {
     Profile,
     Login,
     Spaces,
-    Upload,
     View,
     File,
 } from '../features';
@@ -140,8 +139,11 @@ const App = () => {
                     <Route path="login" element={<Login />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="spaces" element={<Spaces />} />
-                    <Route path="upload" element={<Upload />} />
-                    <Route path="view/:location" element={<View />} />
+                    <Route path="view/:baseSpace" element={<View />} />
+                    <Route
+                        path="view/:baseSpace/*"
+                        element={<View />}
+                    />
                     <Route path="file/:link" element={<File />} />
                 </Routes>
             </main>

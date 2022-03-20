@@ -1,8 +1,9 @@
-import { IFile } from "../view/viewSlice";
+import { IFile } from '../view/viewSlice';
 
 export interface ISpace {
     _id: string;
     name: string;
+    baseSpace: string;
     location: string;
     preferences: string[];
     bookmarks: string[];

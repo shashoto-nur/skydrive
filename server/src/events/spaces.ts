@@ -12,22 +12,41 @@ const setSpacesEvents = (socket: Socket) => {
                 name,
                 location,
                 baseSpace,
-            }: { name: string; location: string; baseSpace: string },
-            callback: (arg0: { spaceIds?: any; res?: string }) => void
+                parentLoc,
+            }: {
+                name: string;
+                location: string;
+                baseSpace: string;
+                parentLoc: string;
+            },
+            callback: (arg0: {
+                spaceIds?: any;
+                res?: string;
+                isBaseSpace?: boolean;
+            }) => void
         ) => {
             if (socket.handshake.auth.userId) {
-                const newSpaceIds = await createSpace(
+                const newSpaceId = await createSpace(
                     name,
                     location,
-                    baseSpace
+                    baseSpace,
+                    parentLoc
                 );
 
-                socket.handshake.auth.spaceIds = socket.handshake.auth.spaceIds
-                    ? [...socket.handshake.auth.spaceIds, newSpaceIds].filter(
-                          (el) => el !== ''
-                      )
-                    : [newSpaceIds];
-                callback({ spaceIds: socket.handshake.auth.spaceIds });
+                const isBaseSpace = !baseSpace;
+
+                if (isBaseSpace)
+                    socket.handshake.auth.spaceIds = socket.handshake.auth
+                        .spaceIds
+                        ? [
+                              ...socket.handshake.auth.spaceIds,
+                              newSpaceId,
+                          ].filter((el) => el !== '')
+                        : [newSpaceId];
+                callback({
+                    spaceIds: socket.handshake.auth.spaceIds,
+                    isBaseSpace,
+                });
             } else callback({ res: 'Unauthorized' });
         }
     );

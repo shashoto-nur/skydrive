@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
 
 import { useAppSelector } from '../../app/hooks';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
-import { selectSocket, selectSpaces } from '../../main/AppSlice';
-import { ISpace } from '../spaces/spacesSlice';
+import { selectSocket } from '../../main/AppSlice';
 
 import encryptFile from '../../helpers/encryptFile';
 import { deriveKey, getAlgorithm, getDigest } from '../../utils';
 import variables from '../../env';
+import { selectSpaceInView } from '../view/viewSlice';
 
 const Upload = () => {
     const socket = useAppSelector(selectSocket) as Socket;
@@ -17,11 +17,11 @@ const Upload = () => {
         name: string;
         iv: Uint8Array;
     };
+    const space = useAppSelector(selectSpaceInView);
 
     const [file, setFile] = useState<'' | File>('');
     const [filename, setFilename] = useState('Choose A File');
-    const [spaceObjects, setSpaceObjects] = useState<ISpace[]>([]);
-    const [space, setSpace] = useState<string | null>(null);
+    if(!space) return <>Space is missing</>;
 
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -36,16 +36,16 @@ const Upload = () => {
     };
 
     const encrypt = () => {
-        if (!file || !key || !space)
+        if (!file || !key)
             return alert(
                 'Please provide a file and a passkey in order to encrypt!'
             );
-        
+
         const chunkNum = Math.ceil(file.size / variables.CHUNK_SIZE);
 
         socket.emit(
             'upload_file',
-            { name: filename, size: file.size, chunkNum, space },
+            { name: filename, size: file.size, chunkNum, space: space._id },
             async ({ id }: { id: string }) => {
                 const digest = await getDigest({ id, algorithm, key });
 
@@ -66,19 +66,9 @@ const Upload = () => {
         );
     };
 
-    const selectSpace = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSpace(event.target.value);
-    };
-
-    const spaces = useAppSelector(selectSpaces);
-    useEffect(() => {
-        if (!spaces) return;
-        setSpaceObjects(spaces);
-    }, [spaces]);
-
     return (
         <>
-            <h1> File upload </h1>
+            <h4> File upload </h4>
 
             <form onSubmit={(event) => event.preventDefault()}>
                 <label
@@ -99,13 +89,6 @@ const Upload = () => {
                         onChange={onFileChange}
                     />
                 </label>
-                <select onChange={selectSpace}>
-                    {spaceObjects.map(({ _id, name }) => (
-                        <option key={_id} value={_id}>
-                            {name}
-                        </option>
-                    ))}
-                </select>
 
                 <input type="button" value="Upload" onClick={encrypt} />
             </form>

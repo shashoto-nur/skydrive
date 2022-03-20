@@ -9,7 +9,7 @@ import { deriveKey, getAlgorithm, getDigest } from '../../utils';
 import encryptFile from '../../helpers/encryptFile';
 import { selectIncomFiles } from '../view/viewSlice';
 
-const Space = () => {
+const Recover = () => {
     const socket = useAppSelector(selectSocket) as Socket;
     const key = useAppSelector(selectKey);
     const algorithm = useAppSelector(selectAlgorithm);
@@ -69,9 +69,9 @@ const Space = () => {
 
     return (
         <>
-            {incompleteFiles && (
+            {incompleteFiles.length > 0 ? (
                 <>
-                    <h6>Incomplete files</h6>
+                    <h4>Incomplete files</h4>
 
                     <form onSubmit={(event) => event.preventDefault()}>
                         {reFile === ''
@@ -101,9 +101,11 @@ const Space = () => {
                         <input type="button" value="Upload" onClick={recover} />
                     </form>
                 </>
+            ) : (
+                <h4>No incomplete files</h4>
             )}
         </>
     );
 };
 
-export default Space;
+export default Recover;

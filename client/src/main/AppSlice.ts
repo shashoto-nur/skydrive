@@ -3,6 +3,37 @@ import { Socket } from 'socket.io-client';
 import { RootState } from '../app/store';
 import { ISpace } from '../features/spaces/spacesSlice';
 
+export interface IBaseUser {
+    _id: string;
+    email: string;
+    password: string;
+    verified: boolean;
+    spaces: string;
+    createdAt: Date;
+    pub: JsonWebKey;
+    priv: string;
+}
+
+export interface IUser extends IBaseUser {
+    invitedTo: {
+        userId: string;
+        spaceId: string;
+        encKey: string;
+        encAlgo: string;
+    }[];
+}
+
+export interface IInvitedTo {
+    user: IUser;
+    space: ISpace;
+    encKey: string;
+    encAlgo: string;
+}
+
+export interface IPopulatedUser extends IBaseUser {
+    invitedTo: IInvitedTo[];
+}
+
 export interface AppState {
     socket: null | {};
     userId: string;

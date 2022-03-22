@@ -2,19 +2,13 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Routes, Route, Link } from 'react-router-dom';
 
-import {
-    SignUp,
-    Profile,
-    Login,
-    Spaces,
-    View,
-    File,
-} from '../features';
+import { SignUp, Profile, Login, Spaces, View, File } from '../features';
 import { setGlobalKey, setGlobalAlgorithm } from '../features/login/loginSlice';
 
 import './App.css';
 import { useAppDispatch } from '../app/hooks';
 import {
+    IInvitedTo,
     setGlobalSocketID,
     setGlobalSpaces,
     setGlobalUserId,
@@ -29,7 +23,7 @@ const App = () => {
         auth: { token: localStorage.getItem('token') },
     });
     const dispatch = useAppDispatch();
-    const [reRender, setReRender] = useState(false);
+    const [invitedTo, setInvitedTo] = useState<IInvitedTo[] | null>(null);
 
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
@@ -78,26 +72,42 @@ const App = () => {
             dispatch(setGlobalKey(key));
             dispatch(setGlobalAlgorithm(algorithm));
 
-            socket.emit('get_enc_spaces', async ({ res }: { res: string }) => {
-                try {
-                    if (!res) return;
+            socket.emit(
+                'get_enc_spaces_and_invites',
+                async ({
+                    err,
+                    encSpaces,
+                    invites,
+                }: {
+                    err: string | null;
+                    encSpaces: string;
+                    invites: IInvitedTo[];
+                }) => {
+                    try {
+                        if (err) return console.log(err);
 
-                    const decString = await decryptStr(res, algorithm, key);
-                    const receivedSpaces: string[] = JSON.parse(decString);
+                        const decString = await decryptStr(
+                            encSpaces,
+                            algorithm,
+                            key
+                        );
+                        const receivedSpaces: string[] = JSON.parse(decString);
 
-                    socket.emit(
-                        'get_spaces',
-                        receivedSpaces,
-                        ({ res }: { res: ISpace[] }) => {
-                            dispatch(setGlobalSpaces(res));
-                        }
-                    );
-                } catch ({ message }) {
-                    console.log({ message });
+                        socket.emit(
+                            'get_spaces',
+                            receivedSpaces,
+                            ({ res }: { res: ISpace[] }) => {
+                                dispatch(setGlobalSpaces(res));
+                            }
+                        );
+                        setInvitedTo(invites);
+                    } catch ({ message }) {
+                        console.log({ message });
+                    }
                 }
-            });
-            setReRender(true);
+            );
         });
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
@@ -105,6 +115,13 @@ const App = () => {
         localStorage.clear();
         window.location.reload();
     };
+
+    const acceptInvite = (spaceId: string) => {
+        return () => {
+            socket.emit('accept_invite', spaceId, {})
+        }
+    }
+
 
     return (
         <div className="App">
@@ -115,7 +132,7 @@ const App = () => {
                 <Link id="login" className="Link" to="login">
                     Login
                 </Link>
-                {reRender ? (
+                {invitedTo ? (
                     <>
                         <Link className="Link" to="profile">
                             Profile
@@ -134,16 +151,27 @@ const App = () => {
                 </button>
             </header>
             <main>
+                {invitedTo
+                    ? invitedTo.map((invite) => (
+                          <>
+                              <h1>{invite.space.name}</h1>
+                              <p>{invite.user.email} invited you to join</p>
+                              <button
+                                  className="button"
+                                  onClick={ acceptInvite(invite.space._id) }
+                              >
+                                  Accept
+                              </button>
+                          </>
+                      ))
+                    : null}
                 <Routes>
                     <Route path="/" element={<SignUp />} />
                     <Route path="login" element={<Login />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="spaces" element={<Spaces />} />
                     <Route path="view/:baseSpace" element={<View />} />
-                    <Route
-                        path="view/:baseSpace/*"
-                        element={<View />}
-                    />
+                    <Route path="view/:baseSpace/*" element={<View />} />
                     <Route path="file/:link" element={<File />} />
                 </Routes>
             </main>

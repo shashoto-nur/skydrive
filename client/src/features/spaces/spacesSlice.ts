@@ -9,8 +9,16 @@ export interface ISpace {
     bookmarks: string[];
     entities: {
         files: string[];
-        folders: string[];
+        subspaces: string[];
     };
+    personal: boolean;
+    key: CryptoKey | undefined;
+    algorithm:
+        | {
+              name: string;
+              iv: Uint8Array;
+          }
+        | undefined;
 }
 
 export interface IPopulatedSpace {
@@ -23,4 +31,12 @@ export interface IPopulatedSpace {
         files: IFile[];
         subspaces: ISpace[];
     };
+    personal: boolean;
+    key: CryptoKey | undefined;
+    algorithm:
+        | {
+              name: string;
+              iv: Uint8Array;
+          }
+        | undefined;
 }

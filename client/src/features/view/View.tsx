@@ -8,7 +8,13 @@ import { selectKey, selectAlgorithm } from '../login/loginSlice';
 import { IFile, setGlobalIncompleteFiles, setSpaceInView } from './viewSlice';
 
 import decryptFile from '../../helpers/decryptFile';
-import { deriveKey, getAlgorithm, getDigest } from '../../utils';
+import {
+    deriveComKey,
+    deriveKey,
+    encryptStr,
+    getAlgorithm,
+    getDigest,
+} from '../../utils';
 import variables from '../../env';
 import { NewSpace, Recover } from '../';
 import { IPopulatedSpace, ISpace } from '../spaces/spacesSlice';
@@ -27,6 +33,7 @@ const Space = () => {
     const [partialDown, setPartialDown] = useState<'' | File>('');
     const [subspaces, setSubSpaces] = useState<ISpace[] | ''>('');
     const [spaceObj, setSpaceObj] = useState<IPopulatedSpace | ''>('');
+    const [invitedUser, setInvitedUser] = useState<string | ''>('');
 
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -63,6 +70,7 @@ const Space = () => {
             .slice(index + baseSpace.length + 1)
             .replace(/\/$/, '');
 
+        if (spaceObj) return;
         socket.emit(
             'get_space',
             {
@@ -71,7 +79,7 @@ const Space = () => {
             },
             ({ space, err }: { space: IPopulatedSpace; err: string }) => {
                 if (err) return console.log(err);
-                console.log(space)
+                console.log(space);
                 const allFiles = space.entities.files;
                 const [completeFiles, incompleteFiles] = partition(
                     allFiles,
@@ -85,8 +93,8 @@ const Space = () => {
                 setSubSpaces(space.entities.subspaces);
             }
         );
-    
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [url, socket, spaces]);
     if (!socket || !key || !algorithm) return <></>;
 
@@ -99,7 +107,7 @@ const Space = () => {
             const base = window.location.origin + '/file/';
             await navigator.clipboard.writeText(base + link);
 
-            alert('Link copied to clipboard!');
+            console.log('Link copied to clipboard!');
         };
     };
 
@@ -109,7 +117,7 @@ const Space = () => {
 
             const fileKey = await deriveKey(digest);
             const fileAlgo = getAlgorithm(digest);
-            if (!fileKey || !fileAlgo) return alert('Try again');
+            if (!fileKey || !fileAlgo) return console.log('Try again');
 
             const startFrom = partialDown
                 ? partialDown.size / variables.CHUNK_SIZE
@@ -127,9 +135,68 @@ const Space = () => {
         };
     };
 
+    const onUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInvitedUser(event.target.value);
+    };
+
+    const inviteUser = () => {
+        if (!invitedUser) return console.log('Enter a user');
+        if (!spaceObj) return console.log('Space not found');
+
+        socket.emit(
+            'get_keys',
+            { otheruser: invitedUser },
+            async ({ pub, priv }: { pub: JsonWebKey; priv: string }) => {
+                if (!pub || !priv) return console.log('No keys found');
+
+                const privJwk: JsonWebKey = JSON.parse(atob(priv));
+                const comKey = await deriveComKey(pub, privJwk);
+                const comAlgo = getAlgorithm(JSON.stringify(comKey));
+                if (!comKey || !comAlgo)
+                    return console.log('No keys or algo found');
+
+                const { key, algorithm } = spaceObj;
+                if (!key || !algorithm)
+                    return console.log('No key or algorithm');
+
+                const keyString = JSON.stringify(key);
+                const algoString = JSON.stringify(algorithm);
+
+                const encKey = await encryptStr(keyString, comAlgo, comKey);
+                const encAlgo = await encryptStr(algoString, comAlgo, comKey);
+
+                socket.emit(
+                    'invite_user',
+                    {
+                        spaceId: spaceObj._id,
+                        otheruser: invitedUser,
+                        encKey,
+                        encAlgo,
+                    },
+                    ({ err }: { err: string }) => {
+                        if (err) console.log(err);
+                    }
+                );
+            }
+        );
+    };
+
     return (
         <>
-            <h2>{spaceObj ? spaceObj.name : "Loading"}</h2>
+            <h2>{spaceObj ? spaceObj.name : 'Loading'}</h2>
+            <p>Type: {spaceObj && spaceObj.personal ? 'Personal' : 'Shared'}</p>
+            {spaceObj && spaceObj.personal && (
+                <>
+                    <input
+                        type="text"
+                        name="space"
+                        className="textbox"
+                        onChange={onUserChange}
+                        placeholder={invitedUser}
+                    />
+                    <button onClick={inviteUser}>Invite</button>
+                </>
+            )}
 
             {subspaces && subspaces.length > 0 && (
                 <>

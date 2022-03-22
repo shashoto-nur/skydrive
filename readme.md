@@ -1,14 +1,20 @@
 # SkyDrive
 
-## Nested spaces
-
-    Create Subspace functionality in space
-    Slugify name to create location
-    Rename space to view
-    Locations: view/:destination
-
 ## Shared space
 
+    Generate a random key
+    Encrypt the key against the user's password
+    Store the encrypted key in database
+    Get the added user's public key
+    Encrypt the key with the public key
+    Share the encrypted key with the added user
+
+    On connection, check for add request
+    Accept || (Reject ?& Block)
+        Get the encrypted key
+        Decrypt the key with the user's private key
+        Encrypt the key against the user's password
+        Store the encrypted key in database
     encData = encrypt(digest, data)
     encDigest = EPK(pub, digest)
     send(encData, encDigest)

@@ -21,7 +21,7 @@ const Upload = () => {
 
     const [file, setFile] = useState<'' | File>('');
     const [filename, setFilename] = useState('Choose A File');
-    if(!space) return <>Space is missing</>;
+    if (!space) return <>Space is missing</>;
 
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {

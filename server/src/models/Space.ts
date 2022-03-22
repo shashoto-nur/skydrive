@@ -11,6 +11,14 @@ export interface ISpace {
         files: string[];
         subspaces: string[];
     };
+    personal: boolean;
+    key: CryptoKey | undefined;
+    algorithm:
+        | {
+              name: string;
+              iv: Uint8Array;
+          }
+        | undefined;
 }
 
 interface SpaceModel extends Model<ISpace> {
@@ -18,10 +26,12 @@ interface SpaceModel extends Model<ISpace> {
         name,
         location,
         baseSpace,
+        personal,
     }: {
         name: string;
         location: string;
         baseSpace: string;
+        personal: boolean;
     }) => Promise<ISpace | undefined>;
     getSpaces: (ids: string[]) => Promise<ISpace[]>;
 }
@@ -59,24 +69,40 @@ const spaceSchema = new Schema<ISpace, SpaceModel>({
             },
         ],
     },
+    personal: {
+        type: Boolean,
+        default: true,
+        required: [true, 'Please enter a personal space'],
+    },
+    key: {
+        type: CryptoKey,
+    },
+    algorithm: {
+        type: {
+            name: String,
+            iv: Uint8Array,
+        },
+    },
 });
 
 spaceSchema.index({ baseSpace: 1, location: 1 }, { unique: true });
 
 spaceSchema.static(
     'createSpace',
-    async function ({ name, location, baseSpace }) {
+    async function ({ name, location, baseSpace, personal }) {
         try {
             if (baseSpace)
                 return await Space.create({
                     name,
                     location,
                     baseSpace,
+                    personal,
                 });
 
             return await Space.create({
                 name,
                 location,
+                personal,
             });
         } catch (error) {
             console.log('New error:', error);

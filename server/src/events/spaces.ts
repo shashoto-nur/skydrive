@@ -13,11 +13,22 @@ const setSpacesEvents = (socket: Socket) => {
                 location,
                 baseSpace,
                 parentLoc,
+                personal,
+                key,
+                algorithm,
             }: {
                 name: string;
                 location: string;
                 baseSpace: string;
                 parentLoc: string;
+                personal: boolean;
+                key: CryptoKey | undefined;
+                algorithm:
+                    | {
+                          name: string;
+                          iv: Uint8Array;
+                      }
+                    | undefined;
             },
             callback: (arg0: {
                 spaceIds?: any;
@@ -30,7 +41,10 @@ const setSpacesEvents = (socket: Socket) => {
                     name,
                     location,
                     baseSpace,
-                    parentLoc
+                    parentLoc,
+                    personal,
+                    key,
+                    algorithm
                 );
 
                 const isBaseSpace = !baseSpace;

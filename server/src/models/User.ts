@@ -1,12 +1,35 @@
 import * as validator from 'validator';
 import bcrypt from 'bcrypt';
-import { Model, Schema, model } from 'mongoose';
+import { Model, Schema, model, Types } from 'mongoose';
+import { ISpace } from './Space';
 
-interface IUser {
+interface IBaseUser {
+    _id: string;
     email: string;
     password: string;
     verified: boolean;
     spaces: string;
+    createdAt: Date;
+    pub: JsonWebKey;
+    priv: string;
+}
+
+export interface IUser extends IBaseUser {
+    invitedTo: {
+        userId: Types.ObjectId;
+        spaceId: Types.ObjectId;
+        encKey?: string;
+        encAlgo?: string;
+    }[];
+}
+
+export interface IPopulatedUser extends IBaseUser {
+    invitedTo: {
+        user: IUser;
+        space: ISpace;
+        encKey?: string;
+        encAlgo?: string;
+    }[];
 }
 
 interface UserModel extends Model<IUser> {
@@ -33,6 +56,23 @@ const userSchema = new Schema<IUser, UserModel>({
     spaces: {
         type: String,
     },
+    createdAt: { type: Date, default: Date.now },
+    pub: { type: Object },
+    priv: { type: String },
+    invitedTo: [
+        {
+            userId: {
+                type: Schema.Types.ObjectId,
+                ref: 'User',
+            },
+            spaceId: {
+                type: Schema.Types.ObjectId,
+                ref: 'Space',
+            },
+            encKey: { type: String },
+            encAlgo: { type: String },
+        },
+    ],
 });
 
 userSchema.static('signup', async function (email, password) {

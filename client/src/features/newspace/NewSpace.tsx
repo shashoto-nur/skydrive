@@ -6,7 +6,7 @@ import { useAppSelector } from '../../app/hooks';
 import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 
-import { encryptStr, slugify } from '../../utils';
+import { deriveKey, encryptStr, getAlgorithm, slugify } from '../../utils';
 
 const NewSpace = () => {
     const { baseSpace } = useParams();
@@ -17,6 +17,7 @@ const NewSpace = () => {
     const spaces = useAppSelector(selectSpaces);
 
     const [space, setSpace] = useState('New space');
+    const [personal, setPersonal] = useState(true);
 
     if (!selectedSocket || !key || !algorithm) return <>Eh...</>;
     const socket = selectedSocket as Socket;
@@ -25,7 +26,7 @@ const NewSpace = () => {
         setSpace(event.target.value);
     };
 
-    const createSpace = () => {
+    const createSpace = async () => {
         if (space === 'New space') return alert('Enter a name for your space!');
         const slugifiedSpace = slugify(space);
 
@@ -39,6 +40,21 @@ const NewSpace = () => {
 
         const baseObj = spaces.find((s) => s.location === baseSpace);
 
+        let spaceKey: CryptoKey | undefined,
+            spaceAlgo:
+                | {
+                      name: string;
+                      iv: Uint8Array;
+                  }
+                | undefined;
+
+        if (!personal) {
+            const uuid = window.crypto.randomUUID();
+            spaceKey = await deriveKey(uuid);
+            spaceAlgo = getAlgorithm(uuid);
+            if (!spaceKey || !spaceAlgo) return alert('Error creating key');
+        }
+
         socket.emit(
             'create_space',
             {
@@ -46,6 +62,9 @@ const NewSpace = () => {
                 location,
                 baseSpace: baseObj?._id,
                 parentLoc: remLocation,
+                personal,
+                key: spaceKey,
+                algo: spaceAlgo,
             },
             async ({
                 spaceIds,
@@ -78,6 +97,15 @@ const NewSpace = () => {
                     onChange={onSpaceChange}
                     placeholder={space}
                 />
+                <input
+                    type="checkbox"
+                    name="personal"
+                    className="checkbox"
+                    onChange={(event) => setPersonal(event.target.checked)}
+                    checked={personal}
+                />
+                <label htmlFor="personal">Personal</label>
+                <br></br>
                 <button type="submit" className="button" onClick={createSpace}>
                     Create
                 </button>

@@ -6,6 +6,8 @@ import getDigest from './getDigest';
 import getFileChunk from './getFileChunk';
 import shouldRepeat from './shouldRepeat';
 import slugify from './slugify';
+import deriveComKey from './deriveComKey';
+import genKeyPair from './genKeyPair';
 
 export {
     encryptStr,
@@ -17,4 +19,6 @@ export {
     getFileChunk,
     shouldRepeat,
     slugify,
+    deriveComKey,
+    genKeyPair,
 };

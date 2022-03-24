@@ -7,6 +7,8 @@ import checkKeyPair from './checkKeyPair';
 import storeKeyPair from './storeKeyPair';
 import getKeys from './getKeys';
 import inviteUser from './inviteUser';
+import addSharedSpace from './addSharedSpace';
+import acceptInvite from './acceptInvite';
 
 export {
     createUser,
@@ -18,4 +20,6 @@ export {
     storeKeyPair,
     getKeys,
     inviteUser,
+    addSharedSpace,
+    acceptInvite,
 };

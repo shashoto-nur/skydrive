@@ -6,7 +6,13 @@ import { useAppSelector } from '../../app/hooks';
 import { selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectAlgorithm, selectKey } from '../login/loginSlice';
 
-import { deriveKey, encryptStr, getAlgorithm, slugify } from '../../utils';
+import { encryptStr, slugify } from '../../utils';
+
+declare global {
+    interface Crypto {
+        randomUUID: () => string;
+    }
+}
 
 const NewSpace = () => {
     const { baseSpace } = useParams();
@@ -39,21 +45,8 @@ const NewSpace = () => {
         ).replace(/\/$/, '');
 
         const baseObj = spaces.find((s) => s.location === baseSpace);
-
-        let spaceKey: CryptoKey | undefined,
-            spaceAlgo:
-                | {
-                      name: string;
-                      iv: Uint8Array;
-                  }
-                | undefined;
-
-        if (!personal) {
-            const uuid = window.crypto.randomUUID();
-            spaceKey = await deriveKey(uuid);
-            spaceAlgo = getAlgorithm(uuid);
-            if (!spaceKey || !spaceAlgo) return alert('Error creating key');
-        }
+        const uuid = !personal ? window.crypto.randomUUID() : '';
+        const encUUID = uuid ? await encryptStr(uuid, algorithm, key) : '';
 
         socket.emit(
             'create_space',
@@ -63,17 +56,34 @@ const NewSpace = () => {
                 baseSpace: baseObj?._id,
                 parentLoc: remLocation,
                 personal,
-                key: spaceKey,
-                algo: spaceAlgo,
             },
             async ({
+                newSpaceId,
                 spaceIds,
                 isBaseSpace,
             }: {
+                newSpaceId: string;
                 spaceIds: string[];
                 isBaseSpace: boolean;
             }) => {
                 if (!isBaseSpace) return;
+                if (!personal) {
+                    const shared = { pass: encUUID, spaceId: newSpaceId };
+                    const encShared = await encryptStr(
+                        JSON.stringify(shared),
+                        algorithm,
+                        key
+                    );
+                    return socket.emit(
+                        'add_shared_space',
+                        {
+                            encShared,
+                        },
+                        ({ res }: { res: string }) => {
+                            console.log(res);
+                        }
+                    );
+                }
                 const string = JSON.stringify(spaceIds);
                 const updatedSpaces = await encryptStr(string, algorithm, key);
                 socket.emit(

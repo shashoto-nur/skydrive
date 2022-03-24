@@ -12,13 +12,6 @@ export interface ISpace {
         subspaces: string[];
     };
     personal: boolean;
-    key: CryptoKey | undefined;
-    algorithm:
-        | {
-              name: string;
-              iv: Uint8Array;
-          }
-        | undefined;
 }
 
 interface SpaceModel extends Model<ISpace> {
@@ -73,15 +66,6 @@ const spaceSchema = new Schema<ISpace, SpaceModel>({
         type: Boolean,
         default: true,
         required: [true, 'Please enter a personal space'],
-    },
-    key: {
-        type: CryptoKey,
-    },
-    algorithm: {
-        type: {
-            name: String,
-            iv: Uint8Array,
-        },
     },
 });
 

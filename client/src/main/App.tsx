@@ -3,18 +3,31 @@ import { io } from 'socket.io-client';
 import { Routes, Route, Link } from 'react-router-dom';
 
 import { SignUp, Profile, Login, Spaces, View, File } from '../features';
-import { setGlobalKey, setGlobalAlgorithm } from '../features/login/loginSlice';
+import {
+    setGlobalKey,
+    setGlobalAlgorithm,
+    selectKey,
+    selectAlgorithm,
+} from '../features/login/loginSlice';
 
 import './App.css';
-import { useAppDispatch } from '../app/hooks';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
     IInvitedTo,
+    IShared,
+    setGlobalShareds,
     setGlobalSocketID,
     setGlobalSpaces,
     setGlobalUserId,
 } from './AppSlice';
 
-import { deriveKey, getAlgorithm, decryptStr } from '../utils';
+import {
+    deriveKey,
+    getAlgorithm,
+    decryptStr,
+    deriveComKey,
+    encryptStr,
+} from '../utils';
 import { ISpace } from '../features/spaces/spacesSlice';
 
 const App = () => {
@@ -24,6 +37,9 @@ const App = () => {
     });
     const dispatch = useAppDispatch();
     const [invitedTo, setInvitedTo] = useState<IInvitedTo[] | null>(null);
+
+    const key = useAppSelector(selectKey);
+    const algorithm = useAppSelector(selectAlgorithm);
 
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
@@ -63,11 +79,9 @@ const App = () => {
                 tempAlgorithm,
                 tempKey
             );
-            const algorithm = getAlgorithm(password) as {
-                name: string;
-                iv: Uint8Array;
-            };
-            const key = (await deriveKey(password)) as CryptoKey;
+            const algorithm = getAlgorithm(password);
+            const key = await deriveKey(password);
+            if (!key || !algorithm) return console.log('no key or algorithm');
 
             dispatch(setGlobalKey(key));
             dispatch(setGlobalAlgorithm(algorithm));
@@ -77,10 +91,12 @@ const App = () => {
                 async ({
                     err,
                     encSpaces,
+                    encShared,
                     invites,
                 }: {
                     err: string | null;
                     encSpaces: string;
+                    encShared: string[];
                     invites: IInvitedTo[];
                 }) => {
                     try {
@@ -91,7 +107,20 @@ const App = () => {
                             algorithm,
                             key
                         );
-                        const receivedSpaces: string[] = JSON.parse(decString);
+                        let receivedSpaces: string[] = JSON.parse(decString);
+                        const decShared = await Promise.all(
+                            encShared.map(async (enc) => {
+                                const dec = await decryptStr(
+                                    enc,
+                                    algorithm,
+                                    key
+                                );
+                                const shared: IShared = JSON.parse(dec);
+                                receivedSpaces.push(shared.spaceId);
+                                return shared;
+                            })
+                        );
+                        dispatch(setGlobalShareds(decShared));
 
                         socket.emit(
                             'get_spaces',
@@ -116,12 +145,48 @@ const App = () => {
         window.location.reload();
     };
 
-    const acceptInvite = (spaceId: string) => {
+    const acceptInvite = (invite: IInvitedTo) => {
         return () => {
-            socket.emit('accept_invite', spaceId, {})
-        }
-    }
+            if (!key || !algorithm) return console.log('no key or algorithm');
+            const { space, priv, pub } = invite;
+            const { _id } = space;
+            socket.emit(
+                'accept_invite',
+                { spaceId: _id },
+                async ({ err, encPass }: { err: string; encPass: string }) => {
+                    if (err || !encPass) return console.log('Error: ', err);
+                    if (typeof pub === 'string' || !priv)
+                        return console.log('no pub or priv');
 
+                    const decPriv = await decryptStr(priv, algorithm, key);
+                    const privJwk: JsonWebKey = JSON.parse(decPriv);
+
+                    const comKey = await deriveComKey(pub, privJwk);
+                    const decPass = await decryptStr(
+                        encPass,
+                        algorithm,
+                        comKey
+                    );
+
+                    const shared = { pass: decPass, spaceId: _id };
+                    const encShared = await encryptStr(
+                        JSON.stringify(shared),
+                        algorithm,
+                        key
+                    );
+                    return socket.emit(
+                        'add_shared_space',
+                        {
+                            encShared,
+                        },
+                        ({ res }: { res: string }) => {
+                            console.log(res);
+                        }
+                    );
+                }
+            );
+        };
+    };
 
     return (
         <div className="App">
@@ -158,7 +223,7 @@ const App = () => {
                               <p>{invite.user.email} invited you to join</p>
                               <button
                                   className="button"
-                                  onClick={ acceptInvite(invite.space._id) }
+                                  onClick={acceptInvite(invite)}
                               >
                                   Accept
                               </button>

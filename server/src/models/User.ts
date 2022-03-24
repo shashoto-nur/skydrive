@@ -9,26 +9,33 @@ interface IBaseUser {
     password: string;
     verified: boolean;
     spaces: string;
+    sharedSpaces: string[];
     createdAt: Date;
     pub: JsonWebKey;
     priv: string;
 }
 
 export interface IUser extends IBaseUser {
+    shared: {
+        spaceId: string;
+        uuid: string;
+    }[];
     invitedTo: {
         userId: Types.ObjectId;
         spaceId: Types.ObjectId;
-        encKey?: string;
-        encAlgo?: string;
+        encPass?: string;
     }[];
 }
 
 export interface IPopulatedUser extends IBaseUser {
+    shared: {
+        space: ISpace;
+        uuid: string;
+    };
     invitedTo: {
         user: IUser;
         space: ISpace;
-        encKey?: string;
-        encAlgo?: string;
+        encPass?: string;
     }[];
 }
 
@@ -56,9 +63,23 @@ const userSchema = new Schema<IUser, UserModel>({
     spaces: {
         type: String,
     },
+    sharedSpaces: {
+        type: [String],
+    },
     createdAt: { type: Date, default: Date.now },
     pub: { type: Object },
     priv: { type: String },
+    shared: {
+        type: [
+            {
+                spaceId: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'Space',
+                },
+                uuid: String,
+            },
+        ],
+    },
     invitedTo: [
         {
             userId: {
@@ -69,8 +90,7 @@ const userSchema = new Schema<IUser, UserModel>({
                 type: Schema.Types.ObjectId,
                 ref: 'Space',
             },
-            encKey: { type: String },
-            encAlgo: { type: String },
+            encPass: { type: String },
         },
     ],
 });

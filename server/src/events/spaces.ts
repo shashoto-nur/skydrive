@@ -14,26 +14,18 @@ const setSpacesEvents = (socket: Socket) => {
                 baseSpace,
                 parentLoc,
                 personal,
-                key,
-                algorithm,
             }: {
                 name: string;
                 location: string;
                 baseSpace: string;
                 parentLoc: string;
                 personal: boolean;
-                key: CryptoKey | undefined;
-                algorithm:
-                    | {
-                          name: string;
-                          iv: Uint8Array;
-                      }
-                    | undefined;
             },
             callback: (arg0: {
                 spaceIds?: any;
                 res?: string;
                 isBaseSpace?: boolean;
+                newSpaceId?: string;
             }) => void
         ) => {
             if (socket.handshake.auth.userId) {
@@ -42,14 +34,12 @@ const setSpacesEvents = (socket: Socket) => {
                     location,
                     baseSpace,
                     parentLoc,
-                    personal,
-                    key,
-                    algorithm
+                    personal
                 );
 
                 const isBaseSpace = !baseSpace;
 
-                if (isBaseSpace)
+                if (isBaseSpace && personal)
                     socket.handshake.auth.spaceIds = socket.handshake.auth
                         .spaceIds
                         ? [
@@ -58,6 +48,7 @@ const setSpacesEvents = (socket: Socket) => {
                           ].filter((el) => el !== '')
                         : [newSpaceId];
                 callback({
+                    newSpaceId,
                     spaceIds: socket.handshake.auth.spaceIds,
                     isBaseSpace,
                 });

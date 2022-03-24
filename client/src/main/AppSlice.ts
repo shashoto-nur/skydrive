@@ -16,34 +16,40 @@ export interface IBaseUser {
 
 export interface IUser extends IBaseUser {
     invitedTo: {
+        priv: string;
+        pub: string | JsonWebKey;
         userId: string;
         spaceId: string;
-        encKey: string;
-        encAlgo: string;
     }[];
-}
-
-export interface IInvitedTo {
-    user: IUser;
-    space: ISpace;
-    encKey: string;
-    encAlgo: string;
 }
 
 export interface IPopulatedUser extends IBaseUser {
     invitedTo: IInvitedTo[];
+}
+export interface IInvitedTo {
+    priv: string;
+    pub: string | JsonWebKey;
+    user: IUser;
+    space: ISpace;
+}
+
+export interface IShared {
+    pass: string;
+    spaceId: string;
 }
 
 export interface AppState {
     socket: null | {};
     userId: string;
     spaces: ISpace[];
+    shareds: IShared[];
 }
 
 const initialState: AppState = {
     socket: null,
     userId: '',
     spaces: [],
+    shareds: [],
 };
 
 export const appSlice = createSlice({
@@ -62,13 +68,22 @@ export const appSlice = createSlice({
             const spaces = action.payload;
             state.spaces = spaces;
         },
+        setGlobalShareds: (state, action: PayloadAction<IShared[]>) => {
+            const shareds = action.payload;
+            state.shareds = shareds;
+        },
     },
 });
 
-export const { setGlobalSocketID, setGlobalUserId, setGlobalSpaces } =
-    appSlice.actions;
+export const {
+    setGlobalSocketID,
+    setGlobalUserId,
+    setGlobalSpaces,
+    setGlobalShareds,
+} = appSlice.actions;
 export const selectSocket = (state: RootState) => state.app.socket;
 export const selectUserId = (state: RootState) => state.app.userId;
 export const selectSpaces = (state: RootState) => state.app.spaces;
+export const selectShareds = (state: RootState) => state.app.shareds;
 
 export default appSlice.reducer;

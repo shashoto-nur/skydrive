@@ -4,16 +4,14 @@ const inviteUser = async ({
     userId,
     spaceId,
     otheruser,
-    encKey,
-    encAlgo,
+    encPass,
 }: {
     userId: string;
     spaceId: string;
     otheruser: string;
-    encKey: string;
-    encAlgo: string;
+    encPass: string;
 }) => {
-    const invitedTo = { userId, spaceId, encKey, encAlgo };
+    const invitedTo = { userId, spaceId, encPass };
     const otherUser = await User.findByIdAndUpdate(
         otheruser,
         {

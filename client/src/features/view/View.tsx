@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import { Link, useParams } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { selectSocket, selectSpaces } from '../../main/AppSlice';
+import { selectShareds, selectSocket, selectSpaces } from '../../main/AppSlice';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
 import { IFile, setGlobalIncompleteFiles, setSpaceInView } from './viewSlice';
 
@@ -26,14 +26,37 @@ const Space = () => {
 
     const socket = useAppSelector(selectSocket) as Socket;
     const spaces = useAppSelector(selectSpaces);
-    const key = useAppSelector(selectKey);
-    const algorithm = useAppSelector(selectAlgorithm);
+    const decShareds = useAppSelector(selectShareds);
 
     const [files, setFiles] = useState<IFile[] | ''>('');
     const [partialDown, setPartialDown] = useState<'' | File>('');
     const [subspaces, setSubSpaces] = useState<ISpace[] | ''>('');
     const [spaceObj, setSpaceObj] = useState<IPopulatedSpace | ''>('');
     const [invitedUser, setInvitedUser] = useState<string | ''>('');
+    const [pass, setPass] = useState<string | ''>('');
+
+    let key = useAppSelector(selectKey),
+        algorithm = useAppSelector(selectAlgorithm);
+
+    useEffect(() => {
+        if (!spaceObj) return;
+        (async () => {
+            const decShared = decShareds.find(
+                (decShared) => decShared.spaceId === spaceObj._id
+            );
+            if (!decShared) return;
+
+            const { pass } = decShared;
+            const tempKey: CryptoKey | undefined = await deriveKey(pass);
+            const tempAlgo = getAlgorithm(pass);
+
+            if (!tempKey || !tempAlgo) return;
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            key = tempKey; // eslint-disable-next-line react-hooks/exhaustive-deps
+            algorithm = tempAlgo;
+            setPass(pass);
+        })();
+    }, [spaceObj]);
 
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -88,6 +111,7 @@ const Space = () => {
 
                 dispatch(setGlobalIncompleteFiles(incompleteFiles));
                 dispatch(setSpaceInView(space));
+
                 setSpaceObj(space);
                 setFiles(completeFiles);
                 setSubSpaces(space.entities.subspaces);
@@ -100,6 +124,7 @@ const Space = () => {
 
     const createLink = ({ id }: { id: string }) => {
         return async () => {
+            if (!key || !algorithm) return;
             const digest = await getDigest({ id, algorithm, key });
             const source = { id, digest };
 
@@ -113,6 +138,7 @@ const Space = () => {
 
     const download = (name: string, chunks: [[number]], id: string) => {
         return async () => {
+            if (!key || !algorithm) return;
             const digest = await getDigest({ id, algorithm, key });
 
             const fileKey = await deriveKey(digest);
@@ -155,23 +181,15 @@ const Space = () => {
                 if (!comKey || !comAlgo)
                     return console.log('No keys or algo found');
 
-                const { key, algorithm } = spaceObj;
-                if (!key || !algorithm)
-                    return console.log('No key or algorithm');
-
-                const keyString = JSON.stringify(key);
-                const algoString = JSON.stringify(algorithm);
-
-                const encKey = await encryptStr(keyString, comAlgo, comKey);
-                const encAlgo = await encryptStr(algoString, comAlgo, comKey);
+                if (!pass) return console.log("Shared space's pass not found");
+                const encPass = await encryptStr(pass, comAlgo, comKey);
 
                 socket.emit(
                     'invite_user',
                     {
                         spaceId: spaceObj._id,
                         otheruser: invitedUser,
-                        encKey,
-                        encAlgo,
+                        encPass,
                     },
                     ({ err }: { err: string }) => {
                         if (err) console.log(err);

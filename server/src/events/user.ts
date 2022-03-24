@@ -9,6 +9,8 @@ import {
     storeKeyPair,
     getKeys,
     inviteUser,
+    addSharedSpace,
+    acceptInvite,
 } from '../controllers/users/';
 
 const setUserEvents = (socket: any) => {
@@ -94,24 +96,22 @@ const setUserEvents = (socket: any) => {
             callback: (arg0: {
                 err?: string | null;
                 encSpaces?: string;
+                encShared?: string[];
                 invites?: {
+                    priv: string;
+                    pub: string | JsonWebKey;
                     userId: Types.ObjectId;
                     spaceId: Types.ObjectId;
                 }[];
             }) => void
         ) => {
-            const { user, err } = await getEncSpaces(
-                socket.handshake.auth.userId
+            const userId: string = socket.handshake.auth.userId;
+            const { encSpaces, encShared, invites, err } = await getEncSpaces(
+                userId
             );
-            if (!user) return callback({ err });
+            if (!err) return callback({ err });
 
-            const encSpaces = user.spaces;
-            const invites = user.invitedTo;
-            invites.map((invite) => {
-                delete invite.encKey;
-                delete invite.encAlgo;
-            });
-            callback({ encSpaces, invites });
+            callback({ encSpaces, encShared, invites });
         }
     );
 
@@ -125,18 +125,28 @@ const setUserEvents = (socket: any) => {
     );
 
     socket.on(
+        'add_shared_space',
+        async (
+            encShared: string,
+            callback: (arg0: { res: string }) => void
+        ) => {
+            const userId: string = socket.handshake.auth.userId;
+            const res = await addSharedSpace(encShared, userId);
+            callback({ res });
+        }
+    );
+
+    socket.on(
         'invite_user',
         async (
             {
                 spaceId,
                 otheruser,
-                encKey,
-                encAlgo,
+                encPass,
             }: {
                 spaceId: string;
                 otheruser: string;
-                encKey: string;
-                encAlgo: string;
+                encPass: string;
             },
             callback: (arg0: { err: string }) => void
         ) => {
@@ -145,10 +155,21 @@ const setUserEvents = (socket: any) => {
                 userId,
                 spaceId,
                 otheruser,
-                encKey,
-                encAlgo,
+                encPass,
             });
             callback({ err });
+        }
+    );
+
+    socket.on(
+        'accept_invite',
+        async (
+            { spaceId }: { spaceId: string },
+            callback: (arg0: { encPass: string | undefined; err: string | undefined; }) => void
+        ) => {
+            const userId: string = socket.handshake.auth.userId;
+            const { encPass, err } = await acceptInvite({ userId, spaceId });
+            callback({ encPass, err });
         }
     );
 };

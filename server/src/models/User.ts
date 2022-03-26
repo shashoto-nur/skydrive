@@ -8,17 +8,16 @@ interface IBaseUser {
     email: string;
     password: string;
     verified: boolean;
-    spaces: string;
-    sharedSpaces: string[];
     createdAt: Date;
     pub: JsonWebKey;
     priv: string;
 }
 
 export interface IUser extends IBaseUser {
+    spaces: Types.ObjectId[];
     shared: {
         spaceId: string;
-        uuid: string;
+        pass: string;
     }[];
     invitedTo: {
         userId: Types.ObjectId;
@@ -28,10 +27,11 @@ export interface IUser extends IBaseUser {
 }
 
 export interface IPopulatedUser extends IBaseUser {
+    spaces: ISpace[];
     shared: {
         space: ISpace;
-        uuid: string;
-    };
+        pass: string;
+    }[];
     invitedTo: {
         user: IUser;
         space: ISpace;
@@ -44,7 +44,6 @@ interface UserModel extends Model<IUser> {
     login: (email: string, password: string) => any;
     updatePassword: (id: string, password: string) => any;
     getEncSpaces: (id: string) => string;
-    addSpaceIds: (id: string, spaceIds: string) => any;
 }
 
 const userSchema = new Schema<IUser, UserModel>({
@@ -61,10 +60,8 @@ const userSchema = new Schema<IUser, UserModel>({
     },
     verified: { type: Boolean, default: false },
     spaces: {
-        type: String,
-    },
-    sharedSpaces: {
-        type: [String],
+        type: [Types.ObjectId],
+        ref: 'Space',
     },
     createdAt: { type: Date, default: Date.now },
     pub: { type: Object },
@@ -76,7 +73,7 @@ const userSchema = new Schema<IUser, UserModel>({
                     type: Schema.Types.ObjectId,
                     ref: 'Space',
                 },
-                uuid: String,
+                pass: String,
             },
         ],
     },
@@ -136,13 +133,6 @@ userSchema.static('getEncSpaces', async function (id) {
 
     const { spaces } = user;
     return spaces;
-});
-
-userSchema.static('addSpaceIds', async function (userId, spaceIds) {
-    const user = await User.findByIdAndUpdate(userId, { spaces: spaceIds });
-    if (!user) throw Error('Incorrect email');
-
-    return user;
 });
 
 const User = model<IUser, UserModel>('user', userSchema);

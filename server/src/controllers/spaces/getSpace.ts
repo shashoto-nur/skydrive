@@ -2,13 +2,13 @@ import Space, { ISpace } from '../../models/Space';
 
 async function getSpace({
     location,
-    id,
+    userId,
 }: {
     location: string;
-    id: string | undefined;
+    userId: string | undefined;
 }): Promise<string | ISpace> {
     try {
-        const space = await Space.findOne({ baseSpace: id, location })
+        const space = await Space.findOne({ user: userId, location })
             .populate('entities.files')
             .populate('entities.subspaces');
 

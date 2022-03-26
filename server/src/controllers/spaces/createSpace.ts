@@ -1,34 +1,63 @@
 import Space from '../../models/Space';
+import User from '../../models/User';
 
-async function createSpace(
-    name: string,
-    location: string,
-    baseSpace: string,
-    parentLoc: string,
-    personal: boolean
-): Promise<string> {
+export interface ICreateSpace {
+    name: string;
+    location: string;
+    userId: string;
+    parentLoc: string;
+    personal: boolean;
+    pass: string;
+    baseSpace: string | undefined;
+}
+
+async function createSpace({
+    name,
+    location,
+    userId,
+    parentLoc,
+    personal,
+    pass,
+    baseSpace,
+}: ICreateSpace): Promise<string> {
     try {
-        const space = await Space.createSpace({
+        const space = await Space.create({
             name,
             location,
-            baseSpace,
+            userId,
             personal,
+            ...(!personal && { pass }),
         });
 
         if (!space) return 'Space not created';
-        if (!baseSpace) return space.id.toString();
+        const isBaseSpace = baseSpace ? true : false;
 
-        const baseSpaceObj = await Space.findOneAndUpdate(
-            { baseSpace, location: parentLoc },
-            {
-                $push: {
-                    'entities.subspaces': space.id,
+        if (!isBaseSpace) {
+            const parentSpace = await Space.findOneAndUpdate(
+                { user: userId, location: parentLoc },
+                {
+                    $push: {
+                        'entities.subspaces': space.id,
+                    },
                 },
-            },
-            { new: true }
-        );
+                { new: true }
+            );
 
-        if (!baseSpaceObj) return 'Space not created';
+            if (!parentSpace) return 'Space not created';
+        } else {
+            const user = await User.findByIdAndUpdate(
+                userId,
+                {
+                    $push: {
+                        spaces: space.id,
+                    },
+                },
+                { new: true }
+            );
+
+            if (!user) return 'Space not created';
+        }
+
         return space.id.toString();
     } catch (err) {
         const { message } = err as Error;

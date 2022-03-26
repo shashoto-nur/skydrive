@@ -1,7 +1,10 @@
 import User from '../../models/User';
 
 const addSharedSpace = async (
-    encShared: string,
+    shared: {
+        pass: string;
+        spaceId: string;
+    },
     userId: string
 ): Promise<string> => {
     try {
@@ -9,7 +12,7 @@ const addSharedSpace = async (
             userId,
             {
                 $push: {
-                    sharedSpaces: encShared,
+                    shared: shared,
                 },
             },
             { new: true }

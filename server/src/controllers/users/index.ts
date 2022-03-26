@@ -2,7 +2,7 @@ import createUser from './createUser';
 import loginUser from './loginUser';
 import updatePassword from './updatePassword';
 import getEncSpaces from './getUser';
-import addSpaceIds from './addSpaceIds';
+import addSpaceId from './addSpaceId';
 import checkKeyPair from './checkKeyPair';
 import storeKeyPair from './storeKeyPair';
 import getKeys from './getKeys';
@@ -15,7 +15,7 @@ export {
     loginUser,
     updatePassword,
     getEncSpaces,
-    addSpaceIds,
+    addSpaceId,
     checkKeyPair,
     storeKeyPair,
     getKeys,

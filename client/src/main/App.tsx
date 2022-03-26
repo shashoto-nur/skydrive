@@ -2,33 +2,30 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Routes, Route, Link } from 'react-router-dom';
 
-import { SignUp, Profile, Login, Spaces, View, File } from '../features';
+import { SignUp, Profile, Login, Spaces, View, File, Invites } from '../features';
 import {
     setGlobalKey,
     setGlobalAlgorithm,
-    selectKey,
-    selectAlgorithm,
 } from '../features/login/loginSlice';
 
 import './App.css';
-import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { useAppDispatch } from '../app/hooks';
 import {
     IInvitedTo,
-    IShared,
+    IPopulatedUser,
+    setGlobalPriv,
     setGlobalShareds,
     setGlobalSocketID,
     setGlobalSpaces,
     setGlobalUserId,
+    setGlobalInvitedTo
 } from './AppSlice';
 
 import {
     deriveKey,
     getAlgorithm,
     decryptStr,
-    deriveComKey,
-    encryptStr,
 } from '../utils';
-import { ISpace } from '../features/spaces/spacesSlice';
 
 const App = () => {
     const socket = io(process.env.REACT_APP_SOCKET_URL!, {
@@ -38,24 +35,12 @@ const App = () => {
     const dispatch = useAppDispatch();
     const [invitedTo, setInvitedTo] = useState<IInvitedTo[] | null>(null);
 
-    const key = useAppSelector(selectKey);
-    const algorithm = useAppSelector(selectAlgorithm);
-
     useEffect(() => {
         dispatch(setGlobalSocketID(socket));
 
         socket.on('connect_error', async (err) => {
             console.log(`connect_error due to ${err.message}`);
-            const pause = (time = 0) => {
-                return new Promise<void>((resolve) => {
-                    setTimeout(() => resolve(), time >= 0 ? time : 0);
-                });
-            };
-
-            for (let i = 0; i < 3; i++) {
-                await pause(1000);
-                if (socket.connected === false) socket.connect();
-            }
+            if (socket.connected === false) socket.connect();
         });
 
         socket.on('message', async ({ id }) => {
@@ -68,11 +53,10 @@ const App = () => {
             dispatch(setGlobalUserId(id));
             const encPassword = localStorage.getItem('encPassword');
 
-            const tempKey = (await deriveKey(id)) as CryptoKey;
-            const tempAlgorithm = getAlgorithm(id) as {
-                name: string;
-                iv: Uint8Array;
-            };
+            const tempKey = await deriveKey(id);
+            const tempAlgorithm = getAlgorithm(id);
+            if (!tempKey || !tempAlgorithm)
+                return console.log('no temp key or algorithm');
 
             const password = await decryptStr(
                 encPassword!,
@@ -87,49 +71,24 @@ const App = () => {
             dispatch(setGlobalAlgorithm(algorithm));
 
             socket.emit(
-                'get_enc_spaces_and_invites',
+                'get_user',
                 async ({
                     err,
-                    encSpaces,
-                    encShared,
-                    invites,
+                    user,
                 }: {
                     err: string | null;
-                    encSpaces: string;
-                    encShared: string[];
-                    invites: IInvitedTo[];
+                    user: IPopulatedUser;
                 }) => {
                     try {
                         if (err) return console.log(err);
 
-                        const decString = await decryptStr(
-                            encSpaces,
-                            algorithm,
-                            key
-                        );
-                        let receivedSpaces: string[] = JSON.parse(decString);
-                        const decShared = await Promise.all(
-                            encShared.map(async (enc) => {
-                                const dec = await decryptStr(
-                                    enc,
-                                    algorithm,
-                                    key
-                                );
-                                const shared: IShared = JSON.parse(dec);
-                                receivedSpaces.push(shared.spaceId);
-                                return shared;
-                            })
-                        );
-                        dispatch(setGlobalShareds(decShared));
+                        const { spaces, shared, invitedTo, priv } = user;
+                        dispatch(setGlobalSpaces(spaces));
+                        dispatch(setGlobalShareds(shared));
+                        dispatch(setGlobalPriv(priv));
+                        dispatch(setGlobalInvitedTo(invitedTo));
 
-                        socket.emit(
-                            'get_spaces',
-                            receivedSpaces,
-                            ({ res }: { res: ISpace[] }) => {
-                                dispatch(setGlobalSpaces(res));
-                            }
-                        );
-                        setInvitedTo(invites);
+                        setInvitedTo(invitedTo);
                     } catch ({ message }) {
                         console.log({ message });
                     }
@@ -143,49 +102,6 @@ const App = () => {
     const logout = () => {
         localStorage.clear();
         window.location.reload();
-    };
-
-    const acceptInvite = (invite: IInvitedTo) => {
-        return () => {
-            if (!key || !algorithm) return console.log('no key or algorithm');
-            const { space, priv, pub } = invite;
-            const { _id } = space;
-            socket.emit(
-                'accept_invite',
-                { spaceId: _id },
-                async ({ err, encPass }: { err: string; encPass: string }) => {
-                    if (err || !encPass) return console.log('Error: ', err);
-                    if (typeof pub === 'string' || !priv)
-                        return console.log('no pub or priv');
-
-                    const decPriv = await decryptStr(priv, algorithm, key);
-                    const privJwk: JsonWebKey = JSON.parse(decPriv);
-
-                    const comKey = await deriveComKey(pub, privJwk);
-                    const decPass = await decryptStr(
-                        encPass,
-                        algorithm,
-                        comKey
-                    );
-
-                    const shared = { pass: decPass, spaceId: _id };
-                    const encShared = await encryptStr(
-                        JSON.stringify(shared),
-                        algorithm,
-                        key
-                    );
-                    return socket.emit(
-                        'add_shared_space',
-                        {
-                            encShared,
-                        },
-                        ({ res }: { res: string }) => {
-                            console.log(res);
-                        }
-                    );
-                }
-            );
-        };
     };
 
     return (
@@ -216,20 +132,7 @@ const App = () => {
                 </button>
             </header>
             <main>
-                {invitedTo
-                    ? invitedTo.map((invite) => (
-                          <>
-                              <h1>{invite.space.name}</h1>
-                              <p>{invite.user.email} invited you to join</p>
-                              <button
-                                  className="button"
-                                  onClick={acceptInvite(invite)}
-                              >
-                                  Accept
-                              </button>
-                          </>
-                      ))
-                    : null}
+                <Invites />
                 <Routes>
                     <Route path="/" element={<SignUp />} />
                     <Route path="login" element={<Login />} />

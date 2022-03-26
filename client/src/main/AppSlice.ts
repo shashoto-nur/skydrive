@@ -3,39 +3,51 @@ import { Socket } from 'socket.io-client';
 import { RootState } from '../app/store';
 import { ISpace } from '../features/spaces/spacesSlice';
 
-export interface IBaseUser {
+interface IBaseUser {
     _id: string;
     email: string;
     password: string;
     verified: boolean;
-    spaces: string;
     createdAt: Date;
     pub: JsonWebKey;
     priv: string;
 }
 
 export interface IUser extends IBaseUser {
+    spaces: string;
+    shared: {
+        spaceId: string;
+        pass: string;
+    }[];
     invitedTo: {
-        priv: string;
-        pub: string | JsonWebKey;
         userId: string;
         spaceId: string;
+        encPass?: string;
     }[];
 }
 
 export interface IPopulatedUser extends IBaseUser {
-    invitedTo: IInvitedTo[];
+    spaces: ISpace[];
+    shared: {
+        space: ISpace;
+        pass: string;
+    }[];
+    invitedTo: {
+        user: IUser;
+        space: ISpace;
+        encPass?: string;
+    }[];
 }
+
 export interface IInvitedTo {
-    priv: string;
-    pub: string | JsonWebKey;
     user: IUser;
     space: ISpace;
+    encPass?: string | undefined;
 }
 
 export interface IShared {
+    space: ISpace;
     pass: string;
-    spaceId: string;
 }
 
 export interface AppState {
@@ -43,6 +55,8 @@ export interface AppState {
     userId: string;
     spaces: ISpace[];
     shareds: IShared[];
+    priv: string;
+    invitedTo: IInvitedTo[];
 }
 
 const initialState: AppState = {
@@ -50,6 +64,8 @@ const initialState: AppState = {
     userId: '',
     spaces: [],
     shareds: [],
+    priv: '',
+    invitedTo: [],
 };
 
 export const appSlice = createSlice({
@@ -72,6 +88,12 @@ export const appSlice = createSlice({
             const shareds = action.payload;
             state.shareds = shareds;
         },
+        setGlobalPriv: (state, action: PayloadAction<string>) => {
+            state.priv = action.payload;
+        },
+        setGlobalInvitedTo: (state, action: PayloadAction<IInvitedTo[]>) => {
+            state.invitedTo = action.payload;
+        }
     },
 });
 
@@ -80,10 +102,15 @@ export const {
     setGlobalUserId,
     setGlobalSpaces,
     setGlobalShareds,
+    setGlobalPriv,
+    setGlobalInvitedTo,
 } = appSlice.actions;
+
 export const selectSocket = (state: RootState) => state.app.socket;
 export const selectUserId = (state: RootState) => state.app.userId;
 export const selectSpaces = (state: RootState) => state.app.spaces;
 export const selectShareds = (state: RootState) => state.app.shareds;
+export const selectPriv = (state: RootState) => state.app.priv;
+export const selectInvitedTo = (state: RootState) => state.app.invitedTo;
 
 export default appSlice.reducer;

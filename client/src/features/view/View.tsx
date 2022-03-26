@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import { Link, useParams } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { selectShareds, selectSocket, selectSpaces } from '../../main/AppSlice';
+import { selectShareds, selectSocket } from '../../main/AppSlice';
 import { selectKey, selectAlgorithm } from '../login/loginSlice';
 import { IFile, setGlobalIncompleteFiles, setSpaceInView } from './viewSlice';
 
@@ -25,38 +25,18 @@ const Space = () => {
     const dispatch = useAppDispatch();
 
     const socket = useAppSelector(selectSocket) as Socket;
-    const spaces = useAppSelector(selectSpaces);
-    const decShareds = useAppSelector(selectShareds);
+    const shareds = useAppSelector(selectShareds);
 
     const [files, setFiles] = useState<IFile[] | ''>('');
     const [partialDown, setPartialDown] = useState<'' | File>('');
+
     const [subspaces, setSubSpaces] = useState<ISpace[] | ''>('');
     const [spaceObj, setSpaceObj] = useState<IPopulatedSpace | ''>('');
     const [invitedUser, setInvitedUser] = useState<string | ''>('');
+
+    const [key, setKey] = useState<CryptoKey | null>(useAppSelector(selectKey));
+    const [algorithm, setAlgorithm] = useState(useAppSelector(selectAlgorithm));
     const [pass, setPass] = useState<string | ''>('');
-
-    let key = useAppSelector(selectKey),
-        algorithm = useAppSelector(selectAlgorithm);
-
-    useEffect(() => {
-        if (!spaceObj) return;
-        (async () => {
-            const decShared = decShareds.find(
-                (decShared) => decShared.spaceId === spaceObj._id
-            );
-            if (!decShared) return;
-
-            const { pass } = decShared;
-            const tempKey: CryptoKey | undefined = await deriveKey(pass);
-            const tempAlgo = getAlgorithm(pass);
-
-            if (!tempKey || !tempAlgo) return;
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            key = tempKey; // eslint-disable-next-line react-hooks/exhaustive-deps
-            algorithm = tempAlgo;
-            setPass(pass);
-        })();
-    }, [spaceObj]);
 
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event?.target?.files![0]) {
@@ -85,24 +65,18 @@ const Space = () => {
     useEffect(() => {
         if (!socket || !baseSpace) return;
 
-        const space = spaces.find((s) => s.location === baseSpace);
-        if (!space) return console.log('Space not found');
-
         const index = url.indexOf(baseSpace);
-        const remLocation = url
-            .slice(index + baseSpace.length + 1)
-            .replace(/\/$/, '');
+        const location = url.slice(index).replace(/\/$/, '');
 
         if (spaceObj) return;
         socket.emit(
             'get_space',
             {
-                location: baseSpace + (remLocation ? '/' + remLocation : ''),
-                id: remLocation ? space._id : undefined,
+                location,
             },
-            ({ space, err }: { space: IPopulatedSpace; err: string }) => {
+            async ({ space, err }: { space: IPopulatedSpace; err: string }) => {
                 if (err) return console.log(err);
-                console.log(space);
+
                 const allFiles = space.entities.files;
                 const [completeFiles, incompleteFiles] = partition(
                     allFiles,
@@ -112,6 +86,23 @@ const Space = () => {
                 dispatch(setGlobalIncompleteFiles(incompleteFiles));
                 dispatch(setSpaceInView(space));
 
+                if (!space.personal) {
+                    const shared = shareds.find(
+                        (decShared) => decShared.space._id === space._id
+                    );
+                    if (!shared) return;
+
+                    const { pass } = shared;
+                    const tempKey = await deriveKey(pass);
+                    const tempAlgo = getAlgorithm(pass);
+
+                    if (!tempKey || !tempAlgo) return;
+
+                    setKey(tempKey);
+                    setAlgorithm(tempAlgo);
+                    setPass(pass);
+                }
+
                 setSpaceObj(space);
                 setFiles(completeFiles);
                 setSubSpaces(space.entities.subspaces);
@@ -119,7 +110,7 @@ const Space = () => {
         );
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [url, socket, spaces]);
+    }, [url, socket]);
     if (!socket || !key || !algorithm) return <></>;
 
     const createLink = ({ id }: { id: string }) => {

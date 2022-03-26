@@ -7,6 +7,7 @@ import View from './view/View';
 import File from './file/File';
 import Recover from './recover/Recover';
 import NewSpace from './newspace/NewSpace';
+import Invites from './Invites/Invites';
 
 export {
     SignUp,
@@ -18,4 +19,5 @@ export {
     File,
     Recover,
     NewSpace,
+    Invites,
 };

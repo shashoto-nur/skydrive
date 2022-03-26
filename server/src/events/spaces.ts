@@ -3,69 +3,20 @@ import { createSpace, getSpace, getSpaces } from '../controllers/spaces/';
 import { ISpace } from '../models/Space';
 
 import { Socket } from 'socket.io';
+import { ICreateSpace } from '../controllers/spaces/createSpace';
 
 const setSpacesEvents = (socket: Socket) => {
     socket.on(
         'create_space',
         async (
-            {
-                name,
-                location,
-                baseSpace,
-                parentLoc,
-                personal,
-            }: {
-                name: string;
-                location: string;
-                baseSpace: string;
-                parentLoc: string;
-                personal: boolean;
-            },
-            callback: (arg0: {
-                spaceIds?: any;
-                res?: string;
-                isBaseSpace?: boolean;
-                newSpaceId?: string;
-            }) => void
+            spaceObj: ICreateSpace,
+            callback: (arg0: { res?: string; newSpaceId?: string }) => void
         ) => {
             if (socket.handshake.auth.userId) {
-                const newSpaceId = await createSpace(
-                    name,
-                    location,
-                    baseSpace,
-                    parentLoc,
-                    personal
-                );
-
-                const isBaseSpace = !baseSpace;
-
-                if (isBaseSpace && personal)
-                    socket.handshake.auth.spaceIds = socket.handshake.auth
-                        .spaceIds
-                        ? [
-                              ...socket.handshake.auth.spaceIds,
-                              newSpaceId,
-                          ].filter((el) => el !== '')
-                        : [newSpaceId];
+                const newSpaceId = await createSpace(spaceObj);
                 callback({
                     newSpaceId,
-                    spaceIds: socket.handshake.auth.spaceIds,
-                    isBaseSpace,
                 });
-            } else callback({ res: 'Unauthorized' });
-        }
-    );
-
-    socket.on(
-        'get_spaces',
-        async (
-            ids: string[],
-            callback: (arg0: { res: string | ISpace[] }) => void
-        ) => {
-            if (socket.handshake.auth.userId) {
-                socket.handshake.auth.spaceIds = ids;
-                const res = await getSpaces(ids);
-                callback({ res });
             } else callback({ res: 'Unauthorized' });
         }
     );
@@ -73,22 +24,20 @@ const setSpacesEvents = (socket: Socket) => {
     socket.on(
         'get_space',
         async (
-            {
-                location,
-                id,
-            }: {
-                location: string;
-                id: string;
-            },
+            { location }: { location: string },
             callback: (arg0: {
-                space: ISpace | undefined;
-                err: string | undefined;
+                space?: ISpace;
+                err?: string;
             }) => void
         ) => {
-            const res = await getSpace({ location, id });
+            const userId = socket.handshake.auth.userId;
+            if(!userId) return callback({ err: 'Unauthorized' });
+
+            const res = await getSpace({ location, userId });
+
             if (typeof res === 'string')
-                return callback({ space: undefined, err: res });
-            callback({ space: res, err: undefined });
+                return callback({ err: res });
+            callback({ space: res });
         }
     );
 };

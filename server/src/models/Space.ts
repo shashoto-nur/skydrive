@@ -3,7 +3,7 @@ import { Model, Schema, model, Types } from 'mongoose';
 export interface ISpace {
     id: Types.ObjectId;
     name: string;
-    baseSpace: Types.ObjectId;
+    user: Types.ObjectId;
     location: string;
     preferences: string[];
     bookmarks: string[];
@@ -14,29 +14,15 @@ export interface ISpace {
     personal: boolean;
 }
 
-interface SpaceModel extends Model<ISpace> {
-    createSpace: ({
-        name,
-        location,
-        baseSpace,
-        personal,
-    }: {
-        name: string;
-        location: string;
-        baseSpace: string;
-        personal: boolean;
-    }) => Promise<ISpace | undefined>;
-    getSpaces: (ids: string[]) => Promise<ISpace[]>;
-}
-
-const spaceSchema = new Schema<ISpace, SpaceModel>({
+const spaceSchema = new Schema<ISpace>({
     name: {
         type: String,
         required: [true, 'Please enter a name'],
     },
-    baseSpace: {
-        type: Schema.Types.ObjectId,
-        ref: 'Space',
+    user: {
+        type: Types.ObjectId,
+        ref: 'User',
+        required: [true, 'Please enter a user'],
     },
     location: {
         type: String,
@@ -69,35 +55,7 @@ const spaceSchema = new Schema<ISpace, SpaceModel>({
     },
 });
 
-spaceSchema.index({ baseSpace: 1, location: 1 }, { unique: true });
+spaceSchema.index({ user: 1, location: 1 }, { unique: true });
 
-spaceSchema.static(
-    'createSpace',
-    async function ({ name, location, baseSpace, personal }) {
-        try {
-            if (baseSpace)
-                return await Space.create({
-                    name,
-                    location,
-                    baseSpace,
-                    personal,
-                });
-
-            return await Space.create({
-                name,
-                location,
-                personal,
-            });
-        } catch (error) {
-            console.log('New error:', error);
-        }
-    }
-);
-
-spaceSchema.static('getSpaces', async function (ids) {
-    const spaces = await Space.find({ _id: { $in: ids } });
-    return spaces;
-});
-
-const Space = model<ISpace, SpaceModel>('space', spaceSchema);
+const Space = model<ISpace>('space', spaceSchema);
 export default Space;

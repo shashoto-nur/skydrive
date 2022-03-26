@@ -1,9 +1,19 @@
 import { sendMail, MailDataType } from '../mail/sendMail';
 import User from '../../models/User';
 
-async function addSpaceIds(spaceIds: string, userId: string): Promise<string> {
+async function addSpaceId(spaceId: string, userId: string): Promise<string> {
     try {
-        const user = await User.addSpaceIds(userId, spaceIds);
+        const user = await User.findOneAndUpdate(
+            { _id: userId },
+            {
+                $push: {
+                    spaces: spaceId,
+                },
+            },
+            { new: true }
+        );
+
+        if (!user) return 'User not found';
 
         const text = `New space created for user:${user.id}`;
         const subject = 'Space created';
@@ -12,7 +22,7 @@ async function addSpaceIds(spaceIds: string, userId: string): Promise<string> {
             console.log(response);
         });
 
-        return user.spaces;
+        return 'Space added';
     } catch (err) {
         const { message } = err as Error;
         console.log('New error:', message);
@@ -20,4 +30,4 @@ async function addSpaceIds(spaceIds: string, userId: string): Promise<string> {
     }
 }
 
-export default addSpaceIds;
+export default addSpaceId;

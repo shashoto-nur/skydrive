@@ -1,7 +1,5 @@
 # SkyDrive
 
-# Change space user connection
-
 ## Files viewer
 
 ## Automated Encryption Update

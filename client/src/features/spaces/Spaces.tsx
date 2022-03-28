@@ -22,7 +22,7 @@ const Spaces = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [spacesSelected]);
 
-    if (!selectedSocket || !key || !algorithm) return <></>;
+    if (!selectedSocket || !key || !algorithm) return <>Error</>;
 
     return (
         <>

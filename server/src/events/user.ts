@@ -101,8 +101,8 @@ const setUserEvents = (socket: any) => {
             const userId: string = socket.handshake.auth.userId;
             const { user, err } = await getEncSpaces(userId);
 
-            if (!err) return callback({ err });
-            callback({ user });
+            if (err) return callback({ err });
+            callback({ user: (user as any)._doc });
         }
     );
 

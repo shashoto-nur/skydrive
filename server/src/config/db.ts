@@ -1,4 +1,4 @@
-import { connect } from 'mongoose';
+import { connect, modelNames } from 'mongoose';
 
 const connectToDatabase = async () => {
     try {
@@ -7,6 +7,7 @@ const connectToDatabase = async () => {
         else {
             const conn = await connect(process.env.DB_URI);
             console.log(` Connected to database: ${conn.connection.host}...`);
+            console.log(` Registered models: ${modelNames().join(', ')}`);
         }
     } catch ({ message }) {
         console.log(`Error: ${message}`);

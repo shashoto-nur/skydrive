@@ -1,4 +1,4 @@
-import { Model, Schema, model, Types } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export interface ISpace {
     id: Types.ObjectId;
@@ -38,13 +38,13 @@ const spaceSchema = new Schema<ISpace>({
         files: [
             {
                 type: Types.ObjectId,
-                ref: 'file',
+                ref: 'File',
             },
         ],
         subspaces: [
             {
                 type: Types.ObjectId,
-                ref: 'space',
+                ref: 'Space',
             },
         ],
     },
@@ -57,5 +57,5 @@ const spaceSchema = new Schema<ISpace>({
 
 spaceSchema.index({ user: 1, location: 1 }, { unique: true });
 
-const Space = model<ISpace>('space', spaceSchema);
+const Space = model<ISpace>('Space', spaceSchema);
 export default Space;

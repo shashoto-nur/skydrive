@@ -24,7 +24,7 @@ const fileSchema = new Schema<IFile, FileModel>({
     },
     space: {
         type: Types.ObjectId,
-        ref: 'space',
+        ref: 'Space',
     },
     location: {
         type: String,
@@ -43,5 +43,5 @@ const fileSchema = new Schema<IFile, FileModel>({
     },
 });
 
-const File = model<IFile, FileModel>('file', fileSchema);
+const File = model<IFile, FileModel>('File', fileSchema);
 export default File;

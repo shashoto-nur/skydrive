@@ -16,15 +16,13 @@ export const loginSlice = createSlice({
     initialState,
     reducers: {
         setGlobalKey: (state, action: PayloadAction<CryptoKey>) => {
-            const key = action.payload;
-            state.key = key;
+            state.key = action.payload;
         },
         setGlobalAlgorithm: (
             state,
             action: PayloadAction<{ name: string; iv: Uint8Array }>
         ) => {
-            const algorithm = action.payload;
-            state.algorithm = algorithm;
+            state.algorithm = action.payload;
         },
     },
 });

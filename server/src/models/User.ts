@@ -40,10 +40,9 @@ export interface IPopulatedUser extends IBaseUser {
 }
 
 interface UserModel extends Model<IUser> {
-    signup: (email: string, password: string) => any;
-    login: (email: string, password: string) => any;
-    updatePassword: (id: string, password: string) => any;
-    getEncSpaces: (id: string) => string;
+    signup: (email: string, password: string) => IUser;
+    login: (email: string, password: string) => IUser;
+    updatePassword: (id: string, password: string) => IUser;
 }
 
 const userSchema = new Schema<IUser, UserModel>({
@@ -127,13 +126,5 @@ userSchema.static('updatePassword', async function (id, password) {
     return user;
 });
 
-userSchema.static('getEncSpaces', async function (id) {
-    const user = await User.findById(id);
-    if (!user) throw Error('Incorrect email');
-
-    const { spaces } = user;
-    return spaces;
-});
-
-const User = model<IUser, UserModel>('user', userSchema);
+const User = model<IUser, UserModel>('User', userSchema);
 export default User;

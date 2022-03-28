@@ -1,11 +1,15 @@
-import { Socket } from "socket.io-client";
-import { useAppSelector } from "../../app/hooks";
-import { IInvitedTo, selectInvitedTo, selectPriv, selectSocket } from "../../main/AppSlice";
-import { decryptStr, deriveComKey, encryptStr } from "../../utils";
-import { selectKey, selectAlgorithm } from "../login/loginSlice";
+import { Socket } from 'socket.io-client';
+import { useAppSelector } from '../../app/hooks';
+import {
+    IInvitedTo,
+    selectInvitedTo,
+    selectPriv,
+    selectSocket,
+} from '../../main/AppSlice';
+import { decryptStr, deriveComKey, encryptStr } from '../../utils';
+import { selectKey, selectAlgorithm } from '../login/loginSlice';
 
 const Invites = () => {
-
     const socket = useAppSelector(selectSocket) as Socket;
     const priv = useAppSelector(selectPriv);
     const invitedTo = useAppSelector(selectInvitedTo);
@@ -56,22 +60,24 @@ const Invites = () => {
     return (
         <div>
             <h1>Invites</h1>
-            {invitedTo
-                ? invitedTo.map((invite) => (
-                      <>
-                          <h1>{invite.space.name}</h1>
-                          <p>{invite.user.email} invited you to join</p>
-                          <button
-                              className="button"
-                              onClick={acceptInvite(invite)}
-                          >
-                              Accept
-                          </button>
-                      </>
-                  ))
-                : <>Empty</>}
+            {invitedTo ? (
+                invitedTo.map((invite) => (
+                    <>
+                        <h1>{invite.space.name}</h1>
+                        <p>{invite.user.email} invited you to join</p>
+                        <button
+                            className="button"
+                            onClick={acceptInvite(invite)}
+                        >
+                            Accept
+                        </button>
+                    </>
+                ))
+            ) : (
+                <>Empty</>
+            )}
         </div>
     );
-}
+};
 
 export default Invites;

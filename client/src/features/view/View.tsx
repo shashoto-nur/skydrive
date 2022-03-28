@@ -34,8 +34,19 @@ const Space = () => {
     const [spaceObj, setSpaceObj] = useState<IPopulatedSpace | ''>('');
     const [invitedUser, setInvitedUser] = useState<string | ''>('');
 
-    const [key, setKey] = useState<CryptoKey | null>(useAppSelector(selectKey));
-    const [algorithm, setAlgorithm] = useState(useAppSelector(selectAlgorithm));
+    const selectedKey = useAppSelector(selectKey);
+    const selectedAlgorithm = useAppSelector(selectAlgorithm);
+    const [key, setKey] = useState<CryptoKey | null>();
+    const [algorithm, setAlgorithm] = useState<{
+        name: string;
+        iv: Uint8Array;
+    } | null>();
+    useEffect(() => {
+        if (selectedKey && selectedAlgorithm) {
+            setKey(selectedKey);
+            setAlgorithm(selectedAlgorithm);
+        }
+    }, [selectedKey, selectedAlgorithm]);
     const [pass, setPass] = useState<string | ''>('');
 
     const selectPartialDown = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,12 +79,9 @@ const Space = () => {
         const index = url.indexOf(baseSpace);
         const location = url.slice(index).replace(/\/$/, '');
 
-        if (spaceObj) return;
         socket.emit(
             'get_space',
-            {
-                location,
-            },
+            { location },
             async ({ space, err }: { space: IPopulatedSpace; err: string }) => {
                 if (err) return console.log(err);
 
@@ -86,32 +94,31 @@ const Space = () => {
                 dispatch(setGlobalIncompleteFiles(incompleteFiles));
                 dispatch(setSpaceInView(space));
 
-                if (!space.personal) {
-                    const shared = shareds.find(
-                        (decShared) => decShared.space._id === space._id
-                    );
-                    if (!shared) return;
-
-                    const { pass } = shared;
-                    const tempKey = await deriveKey(pass);
-                    const tempAlgo = getAlgorithm(pass);
-
-                    if (!tempKey || !tempAlgo) return;
-
-                    setKey(tempKey);
-                    setAlgorithm(tempAlgo);
-                    setPass(pass);
-                }
-
                 setSpaceObj(space);
                 setFiles(completeFiles);
                 setSubSpaces(space.entities.subspaces);
+
+                if (space.personal) return;
+                const shared = shareds.find(
+                    (decShared) => decShared.space._id === space._id
+                );
+                if (!shared) return;
+
+                const { pass } = shared;
+                const tempKey = await deriveKey(pass);
+                const tempAlgo = getAlgorithm(pass);
+
+                if (!tempKey || !tempAlgo) return;
+
+                setKey(tempKey);
+                setAlgorithm(tempAlgo);
+                setPass(pass);
             }
         );
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [url, socket]);
-    if (!socket || !key || !algorithm) return <></>;
+    }, [socket, url]);
+
+    if (!socket || !key || !algorithm) return <>Loading...</>;
 
     const createLink = ({ id }: { id: string }) => {
         return async () => {
@@ -194,7 +201,7 @@ const Space = () => {
         <>
             <h2>{spaceObj ? spaceObj.name : 'Loading'}</h2>
             <p>Type: {spaceObj && spaceObj.personal ? 'Personal' : 'Shared'}</p>
-            {spaceObj && spaceObj.personal && (
+            {(!spaceObj || !spaceObj.personal) && (
                 <>
                     <input
                         type="text"

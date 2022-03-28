@@ -24,13 +24,13 @@ async function createSpace({
         const space = await Space.create({
             name,
             location,
-            userId,
+            user: userId,
             personal,
             ...(!personal && { pass }),
         });
 
         if (!space) return 'Space not created';
-        const isBaseSpace = baseSpace ? true : false;
+        const isBaseSpace = baseSpace ? false : true;
 
         if (!isBaseSpace) {
             const parentSpace = await Space.findOneAndUpdate(

@@ -93,7 +93,7 @@ export const appSlice = createSlice({
         },
         setGlobalInvitedTo: (state, action: PayloadAction<IInvitedTo[]>) => {
             state.invitedTo = action.payload;
-        }
+        },
     },
 });
 

@@ -2,11 +2,16 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Routes, Route, Link } from 'react-router-dom';
 
-import { SignUp, Profile, Login, Spaces, View, File, Invites } from '../features';
 import {
-    setGlobalKey,
-    setGlobalAlgorithm,
-} from '../features/login/loginSlice';
+    SignUp,
+    Profile,
+    Login,
+    Spaces,
+    View,
+    File,
+    Invites,
+} from '../features';
+import { setGlobalKey, setGlobalAlgorithm } from '../features/login/loginSlice';
 
 import './App.css';
 import { useAppDispatch } from '../app/hooks';
@@ -18,14 +23,10 @@ import {
     setGlobalSocketID,
     setGlobalSpaces,
     setGlobalUserId,
-    setGlobalInvitedTo
+    setGlobalInvitedTo,
 } from './AppSlice';
 
-import {
-    deriveKey,
-    getAlgorithm,
-    decryptStr,
-} from '../utils';
+import { deriveKey, getAlgorithm, decryptStr } from '../utils';
 
 const App = () => {
     const socket = io(process.env.REACT_APP_SOCKET_URL!, {
@@ -81,8 +82,8 @@ const App = () => {
                 }) => {
                     try {
                         if (err) return console.log(err);
-
                         const { spaces, shared, invitedTo, priv } = user;
+
                         dispatch(setGlobalSpaces(spaces));
                         dispatch(setGlobalShareds(shared));
                         dispatch(setGlobalPriv(priv));
@@ -97,7 +98,7 @@ const App = () => {
         });
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [socket]);
+    }, []);
 
     const logout = () => {
         localStorage.clear();

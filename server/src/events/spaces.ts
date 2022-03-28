@@ -25,18 +25,14 @@ const setSpacesEvents = (socket: Socket) => {
         'get_space',
         async (
             { location }: { location: string },
-            callback: (arg0: {
-                space?: ISpace;
-                err?: string;
-            }) => void
+            callback: (arg0: { space?: ISpace; err?: string }) => void
         ) => {
             const userId = socket.handshake.auth.userId;
-            if(!userId) return callback({ err: 'Unauthorized' });
+            if (!userId) return callback({ err: 'Unauthorized' });
 
             const res = await getSpace({ location, userId });
 
-            if (typeof res === 'string')
-                return callback({ err: res });
+            if (typeof res === 'string') return callback({ err: res });
             callback({ space: res });
         }
     );
